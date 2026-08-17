@@ -74,17 +74,17 @@
     { port: "İzmir", region: "Ege Denizi", title: "Ege'nin limanları: İzmir & Aliağa",
       desc: "Aliağa ve İzmir limanları, Ege kıyısının konteyner ve yük trafiğinin merkezi. İhracatın önemli bir kısmı buradan denize açılıyor.",
       metrics: [{ key: "yuk_ton", nm: "Aliağa", k: "Aliağa · yük" }, { key: "konteyner_teu", nm: "İzmir", k: "İzmir · konteyner" }] },
+    { port: "Antalya", region: "Akdeniz · Batı", title: "Antalya kıyıları",
+      desc: "Turizmin ve kruvaziyer trafiğinin yoğunlaştığı Akdeniz kıyısı. Yolcu gemileri için önemli bir uğrak.",
+      metrics: [{ key: "yuk_ton", nm: "Antalya", k: "Elleçlenen yük" }] },
     { port: "Mersin", region: "Akdeniz", title: "Mersin — Akdeniz'in konteyner üssü",
       desc: "Türkiye'nin en büyük konteyner limanlarından biri. Doğu Akdeniz ticaretinin kalbi burada atıyor.",
       metrics: [{ key: "konteyner_teu", nm: "Mersin", k: "Konteyner" }, { key: "yuk_ton", nm: "Mersin", k: "Toplam yük" }] },
     { port: "İskenderun", region: "Akdeniz · Doğu", title: "İskenderun Körfezi",
       desc: "Demir-çelik ve sanayi yükünün yoğun olduğu körfez. Ağır yük taşımacılığında ülkenin öncü bölgelerinden.",
       metrics: [{ key: "yuk_ton", nm: "İskenderun", k: "Elleçlenen yük" }] },
-    { port: "Antalya", region: "Akdeniz · Batı", title: "Antalya kıyıları",
-      desc: "Turizmin ve kruvaziyer trafiğinin yoğunlaştığı Akdeniz kıyısı. Yolcu gemileri için önemli bir uğrak.",
-      metrics: [{ key: "yuk_ton", nm: "Antalya", k: "Elleçlenen yük" }] },
-    { port: "Samsun", region: "Karadeniz", title: "Samsun — Karadeniz'e açılış",
-      desc: "Karadeniz kıyısının en büyük limanlarından. Bölgenin yük ve lojistik merkezi konumunda.",
+    { port: "Samsun", region: "Karadeniz", title: "Boğazlardan Karadeniz'e: Samsun",
+      desc: "Gemi rotasını kuzeye çevirip Boğazlardan Karadeniz'e çıkıyor. Samsun, bu kıyının en büyük limanlarından ve bölgenin lojistik merkezi.",
       metrics: [{ key: "yuk_ton", nm: "Samsun", k: "Elleçlenen yük" }] },
     { port: "Trabzon", region: "Karadeniz · Doğu", title: "Yolculuk Trabzon'da tamamlanıyor",
       desc: "Doğu Karadeniz'in kapısı Trabzon. Buraya kadar geminin izlediği rota, Türkiye'nin dört bir yanındaki denizciliğin canlılığını gösteriyor.",
@@ -114,7 +114,19 @@
     // Harita SVG
     const vb = D.map.viewBox;
     const journeyPts = JOURNEY.map((s) => byName(s.port)).filter((p) => p.mx);
-    const routeD = journeyPts.map((p, i) => (i ? "L" : "M") + p.mx + "," + p.my).join(" ");
+    // Rota, karadan değil kıyıyı takip eden deniz güzergâhından geçer
+    function smoothPath(pts) {
+      if (!pts || pts.length < 2) return "";
+      let d = `M${pts[0][0]},${pts[0][1]}`;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+        d += `C${p1[0] + (p2[0] - p0[0]) / 6},${p1[1] + (p2[1] - p0[1]) / 6} ` +
+             `${p2[0] - (p3[0] - p1[0]) / 6},${p2[1] - (p3[1] - p1[1]) / 6} ${p2[0]},${p2[1]}`;
+      }
+      return d;
+    }
+    const routeD = smoothPath(D.map.searoute);
+    const routeBlackD = smoothPath(D.map.searoute_black);
     const dots = P.filter((p) => p.mx).map((p) =>
       `<circle class="port-dot" data-port="${p.name}" cx="${p.mx}" cy="${p.my}" r="3.4"></circle>`).join("");
     const labels = journeyPts.map((p) =>
@@ -129,22 +141,45 @@
       </defs>
       ${D.map.outline.map((d) => `<path class="land" d="${d}"></path>`).join("")}
       <path class="route" d="${routeD}"></path>
+      <path class="route" d="${routeBlackD}"></path>
       ${dots}${labels}
       <g class="ship">
-        <circle r="14" fill="var(--cyan-400)" opacity="0.14"><animate attributeName="r" values="10;20;10" dur="2.6s" repeatCount="indefinite"/></circle>
-        <g class="ship-glyph" filter="url(#shipShadow)" transform="rotate(0)">
-          <path d="M-4,-9 L4,-9 L7,0 L4,10 L-4,10 L-7,0 Z" fill="#eaf4fb" stroke="var(--sea-600)" stroke-width="1"/>
-          <rect x="-3" y="-4" width="6" height="9" rx="1.3" fill="var(--sea-500)"/>
-          <circle cx="0" cy="-6" r="1.4" fill="var(--navy-800)"/>
+        <circle r="26" fill="var(--cyan-400)" opacity="0.10"><animate attributeName="r" values="18;34;18" dur="3s" repeatCount="indefinite"/></circle>
+        <g class="ship-rot">
+          <path class="wake" d="M0,9 C-5,22 -8,34 -6,48"/>
+          <path class="wake" d="M0,9 C5,22 8,34 6,48" style="opacity:.45"/>
+          <g class="ship-glyph" filter="url(#shipShadow)" transform="scale(1.5)">
+            <path d="M0,-20 C5,-13.5 7.2,-6 7.2,1.5 L7.2,12.5 C7.2,15.7 4.9,18 2,18 L-2,18 C-4.9,18 -7.2,15.7 -7.2,12.5 L-7.2,1.5 C-7.2,-6 -5,-13.5 0,-20 Z"
+                  fill="#e8f1f8" stroke="#15405f" stroke-width="1"/>
+            <path d="M0,-16 C3.6,-11 5.4,-5.5 5.4,1.5 L5.4,11 C5.4,13.3 3.8,14.6 1.8,14.6 L-1.8,14.6 C-3.8,14.6 -5.4,13.3 -5.4,11 L-5.4,1.5 C-5.4,-5.5 -3.6,-11 0,-16 Z"
+                  fill="#16405e"/>
+            <rect x="-4.2" y="-8.4" width="3.7" height="3.7" rx="0.6" fill="#d99a2b"/>
+            <rect x="0.5" y="-8.4" width="3.7" height="3.7" rx="0.6" fill="#c9563f"/>
+            <rect x="-4.2" y="-3.4" width="3.7" height="3.7" rx="0.6" fill="#2f8f77"/>
+            <rect x="0.5" y="-3.4" width="3.7" height="3.7" rx="0.6" fill="#3d92d1"/>
+            <rect x="-4.2" y="1.6" width="3.7" height="3.7" rx="0.6" fill="#c9563f"/>
+            <rect x="0.5" y="1.6" width="3.7" height="3.7" rx="0.6" fill="#d99a2b"/>
+            <rect x="-4" y="7.4" width="8" height="5.4" rx="1.1" fill="#f2f7fb"/>
+            <rect x="-2.4" y="8.8" width="4.8" height="2" rx="0.5" fill="#22506e"/>
+          </g>
         </g>
       </g>
     </svg>`;
 
     const ship = stage.querySelector(".ship");
     const dotEls = stage.querySelectorAll(".port-dot");
+    const shipRot = stage.querySelector(".ship-rot");
     function goto(i) {
       const p = byName(JOURNEY[i].port); if (!p.mx) return;
       ship.setAttribute("transform", `translate(${p.mx},${p.my})`);
+      // Rotayı takip et: pruva bir sonraki limana (son durakta bir öncekinden gelen yöne) baksın
+      const nxt = byName(JOURNEY[Math.min(i + 1, JOURNEY.length - 1)].port);
+      const prv = byName(JOURNEY[Math.max(i - 1, 0)].port);
+      const a = i < JOURNEY.length - 1 ? p : prv, b = i < JOURNEY.length - 1 ? nxt : p;
+      if (shipRot && a.mx != null && b.mx != null && (b.mx !== a.mx || b.my !== a.my)) {
+        const deg = (Math.atan2(b.my - a.my, b.mx - a.mx) * 180) / Math.PI + 90;
+        shipRot.setAttribute("transform", `rotate(${deg.toFixed(1)})`);
+      }
       dotEls.forEach((d) => d.classList.toggle("hot", d.dataset.port === JOURNEY[i].port));
     }
     goto(0);

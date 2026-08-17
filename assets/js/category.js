@@ -117,8 +117,8 @@
     <section class="page-hero">
       <div class="wrap">
         <div class="breadcrumb reveal"><a href="index.html">Anasayfa</a> ${arrow("right")} <span>${cfg.title}</span></div>
-        <div style="display:flex;align-items:center;gap:18px" class="reveal">
-          <span class="crest" style="width:56px;height:56px;color:${cfg.accent}">${icon(cfg.ic)}</span>
+        <div class="page-title reveal">
+          <span class="page-icon" style="color:${cfg.accent}">${icon(cfg.ic)}</span>
           <h1>${cfg.title}</h1>
         </div>
         <p class="intro reveal d1">${cfg.intro}</p>
