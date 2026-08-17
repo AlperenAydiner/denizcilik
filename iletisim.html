@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İletişim — T.C. UAB Denizcilik Verileri</title>
+<meta name="description" content="Denizcilik Genel Müdürlüğü iletişim bilgileri.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div id="site-header"></div>
+<main>
+  <section class="page-hero"><div class="wrap">
+    <div class="breadcrumb"><a href="index.html">Anasayfa</a> › <span>İletişim</span></div>
+    <h1>İletişim</h1>
+    <p class="intro">Denizcilik istatistikleriyle ilgili soru, görüş ve talepleriniz için Denizcilik Genel Müdürlüğü ile iletişime geçebilirsiniz.</p>
+  </div></section>
+
+  <section class="section" style="padding-top:20px"><div class="wrap">
+    <div class="contact-grid">
+      <div class="contact-card reveal">
+        <h3 style="margin-bottom:10px">Denizcilik Genel Müdürlüğü</h3>
+        <div class="contact-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span><div><div class="k">Adres</div><div class="v">Hakkı Turayliç Cad. No:5, 06338 Emek / Ankara</div></div></div>
+        <div class="contact-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5h4l2 5-3 2a12 12 0 006 6l2-3 5 2v4a2 2 0 01-2 2A17 17 0 013 7a2 2 0 011-2z"/></svg></span><div><div class="k">Santral</div><div class="v"><a href="tel:03122031000">0312 203 10 00</a></div></div></div>
+        <div class="contact-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="8" width="16" height="10" rx="1"/><path d="M8 8V4h8v4M8 14h8"/></svg></span><div><div class="k">Faks</div><div class="v">0312 232 42 24</div></div></div>
+        <div class="contact-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18"/></svg></span><div><div class="k">Web</div><div class="v"><a href="https://denizcilik.uab.gov.tr/" target="_blank" rel="noopener">denizcilik.uab.gov.tr</a></div></div></div>
+        <div class="contact-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5h4l2 5-3 2a12 12 0 006 6l2-3 5 2v4a2 2 0 01-2 2A17 17 0 013 7a2 2 0 011-2z"/></svg></span><div><div class="k">Çağrı Merkezi</div><div class="v">ALO 123</div></div></div>
+      </div>
+
+      <div class="contact-card reveal d1">
+        <h3 style="margin-bottom:6px">Mesaj gönderin</h3>
+        <p class="csub" style="margin-bottom:18px">Formu doldurduğunuzda varsayılan e-posta uygulamanız açılır.</p>
+        <form id="contactForm" action="mailto:denizcilik@uab.gov.tr" method="post" enctype="text/plain">
+          <div class="field"><label for="ad">Ad Soyad</label><input id="ad" name="Ad" type="text" required></div>
+          <div class="field"><label for="eposta">E-posta</label><input id="eposta" name="Eposta" type="email" required></div>
+          <div class="field"><label for="mesaj">Mesajınız</label><textarea id="mesaj" name="Mesaj" rows="5" required></textarea></div>
+          <button type="submit" class="btn btn-primary">Gönder
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+        </form>
+      </div>
+    </div>
+  </div></section>
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/main.js"></script>
+<script src="assets/js/layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arşiv — T.C. UAB Denizcilik Verileri</title>
+<meta name="description" content="2004'ten bugüne denizcilik istatistikleri arşivi.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div id="site-header"></div>
+<main>
+  <section class="page-hero"><div class="wrap">
+    <div class="breadcrumb"><a href="index.html">Anasayfa</a> › <span>Arşiv</span></div>
+    <h1>İstatistik Arşivi</h1>
+    <p class="intro">Türkiye'nin denizcilik istatistikleri 2004 yılından bu yana düzenli olarak yayımlanıyor. Kategori ve yıla göre resmi dosyalara buradan ulaşabilirsiniz.</p>
+  </div></section>
+  <section class="section" style="padding-top:20px"><div class="wrap">
+    <div class="chart-card reveal" style="padding:0;overflow:hidden">
+      <table class="data-table" id="archiveTable">
+        <thead><tr><th>Kategori</th><th>Kapsam</th><th>Resmi Dosyalar</th></tr></thead>
+        <tbody id="archiveBody"></tbody>
+      </table>
+    </div>
+    <div class="insight reveal" style="margin-top:24px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/><path d="M9 21h6"/></svg>
+      <div>Dosyalar, Denizcilik Genel Müdürlüğü'nün resmi arşivinde Excel biçiminde tutulur. Bu platform, o verileri vatandaşın kolayca anlayabileceği görsellere dönüştürür.</div>
+    </div>
+  </div></section>
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/main.js"></script>
+<script src="assets/js/layout.js"></script>
+<script>
+(function(){
+  var GOV="https://denizcilikistatistikleri.uab.gov.tr";
+  var rows=[
+    ["Yük","2004 – 2026 · aylık, liman ve tür bazında","/yuk-istatistikleri"],
+    ["Konteyner","2004 – 2026 · TEU ve liman bazında","/konteyner-istatistikleri"],
+    ["Türk Boğazları","2019 – 2026 · çeyrek dönem","/turk-bogazlari-gemi-gecis-istatistikleri"],
+    ["Kabotaj","2003 – 2025 · yolcu ve araç","/kabotaj-istatistikleri"],
+    ["Kruvaziyer","2004 – 2026 · yolcu ve gemi","/kruvaziyer-istatistikleri"],
+    ["RO-RO Araç","2020 – 2026 · taşınan araç","/ro-ro-arac-istatistikleri"],
+    ["Gemi","2004 – 2026 · uğrayan gemi","/gemi-istatistikleri"],
+    ["Filo","Güncel · gemi türü ve DWT","/filo-istatistikleri"]
+  ];
+  document.getElementById("archiveBody").innerHTML=rows.map(function(r){
+    return "<tr><td class='yr'>"+r[0]+"</td><td style='color:var(--text-soft)'>"+r[1]+"</td>"+
+      "<td><a class='filepill' href='"+GOV+r[2]+"' target='_blank' rel='noopener'>"+
+      "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7'><path d='M14 3v5h5M7 3h8l5 5v11a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z'/></svg>"+
+      "Dosyaları aç</a></td></tr>";
+  }).join("");
+})();
+</script>
+</body>
+</html>
