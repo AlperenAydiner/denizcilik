@@ -16,7 +16,7 @@
       <p class="intro reveal d1">Her balonun büyüklüğü o limanın hacmini gösterir. Bir limanın üzerine gelin; yük ve konteyner rakamlarını görün. Aşağıdaki tablodan limanları sıralayabilirsiniz.</p>
     </div></section>
     <section class="section" style="padding-top:10px"><div class="wrap">
-      <div class="reveal" id="haritaMap"></div>
+      <div class="reveal mapviz" id="haritaMap"></div>
     </div></section>
     <section class="section" style="padding-top:0"><div class="wrap">
       <div class="section-head reveal"><h2>Limanlar sıralaması</h2><p>Sütun başlığına tıklayarak sıralayın.</p></div>
@@ -38,7 +38,7 @@
     function draw() {
       const vals = P.map((p) => p[mode]).filter((v) => v > 0), max = Math.max(...vals);
       const R = (v) => (v > 0 ? 6 + 34 * Math.sqrt(v / max) : 0);
-      const fill = mode === "yuk_ton" ? "rgba(34,211,238,0.28)" : "rgba(245,167,66,0.28)";
+      const fill = mode === "yuk_ton" ? "rgba(0,184,174,0.30)" : "rgba(224,118,47,0.28)";
       const stroke = mode === "yuk_ton" ? "var(--c-yuk)" : "var(--c-konteyner)";
       sv.innerHTML = `<svg class="bigmap" viewBox="${D.map.viewBox}" preserveAspectRatio="xMidYMid meet">
         ${D.map.outline.map((d) => `<path class="land" d="${d}"></path>`).join("")}

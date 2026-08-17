@@ -123,8 +123,9 @@
   function initHeaderScroll() {
     const h = document.querySelector(".site-header");
     if (!h) return;
+    // Kaydırıldığında header'a hafif gölge ver (renk CSS'te kalsın)
     const onScroll = () => {
-      h.style.background = window.scrollY > 30 ? "rgba(4,12,24,0.9)" : "rgba(6,18,33,0.72)";
+      h.style.boxShadow = window.scrollY > 30 ? "0 6px 20px -12px rgba(27,35,62,0.35)" : "none";
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();

@@ -218,7 +218,7 @@
       const R = (v) => (v > 0 ? 6 + 30 * Math.sqrt(v / max) : 0);
       const color = mode === "yuk_ton" ? "var(--c-yuk)" : "var(--c-konteyner)";
       const bubbles = P.filter((p) => p[mode] > 0).sort((a, b) => b[mode] - a[mode]).map((p) =>
-        `<circle class="bubble" data-port="${p.name}" cx="${p.mx}" cy="${p.my}" r="${R(p[mode])}" style="fill:${color.replace('var(--c-yuk)', 'rgba(34,211,238,0.28)').replace('var(--c-konteyner)', 'rgba(245,167,66,0.28)')};stroke:${color}"></circle>`).join("");
+        `<circle class="bubble" data-port="${p.name}" cx="${p.mx}" cy="${p.my}" r="${R(p[mode])}" style="fill:${mode === 'yuk_ton' ? 'rgba(0,184,174,0.30)' : 'rgba(224,118,47,0.28)'};stroke:${color}"></circle>`).join("");
       svgWrap.innerHTML = `<svg class="bigmap" viewBox="${D.map.viewBox}" preserveAspectRatio="xMidYMid meet">
         ${D.map.outline.map((d) => `<path class="land" d="${d}"></path>`).join("")}
         ${bubbles}

@@ -86,7 +86,7 @@
       requestAnimationFrame(() => (line.style.strokeDashoffset = "0"));
       // noktalar + hover
       pts.forEach((p, i) => {
-        const dot = el("circle", { cx: p[0], cy: p[1], r: 4, fill: "#04121f", stroke: s.color, "stroke-width": 2, style: "cursor:pointer" });
+        const dot = el("circle", { cx: p[0], cy: p[1], r: 4, fill: "#ffffff", stroke: s.color, "stroke-width": 2, style: "cursor:pointer" });
         dot.addEventListener("mouseenter", () => {
           dot.setAttribute("r", 6);
           const rect = host.getBoundingClientRect(), sc = rect.width / W;

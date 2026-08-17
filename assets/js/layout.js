@@ -32,7 +32,7 @@
   <header class="site-header">
     <div class="wrap nav">
       <a class="brand" href="index.html" aria-label="Anasayfa">
-        <img class="brand-logo" src="assets/img/uab-logo.svg" alt="T.C. Ulaştırma ve Altyapı Bakanlığı" width="196" height="63">
+        <span class="brand-mark"><img class="brand-logo" src="assets/img/uab-logo.svg" alt="T.C. Ulaştırma ve Altyapı Bakanlığı" width="196" height="63"></span>
         <span class="brand-divider"></span>
         <span class="brand-sub">Denizcilik<br><b>İstatistikleri</b></span>
       </a>
@@ -52,7 +52,7 @@
     <div class="wrap">
       <div class="footer-top">
         <div class="footer-brand">
-          <img class="footer-logo" src="assets/img/uab-logo.svg" alt="T.C. Ulaştırma ve Altyapı Bakanlığı" width="210" height="68">
+          <span class="brand-mark footer-mark"><img class="footer-logo" src="assets/img/uab-logo.svg" alt="T.C. Ulaştırma ve Altyapı Bakanlığı" width="210" height="68"></span>
           <p>Türkiye'nin deniz ticareti, limanları, gemileri ve yolcularına ait resmi istatistikler.</p>
           <div class="footer-contact">
             <span>Hakkı Turayliç Cad. No:5, 06338 Emek / Ankara</span>
