@@ -20,13 +20,12 @@
 
   const header = `
   <div class="topbar"><div class="wrap">
-    <a href="https://www.uab.gov.tr" target="_blank" rel="noopener">UAB.GOV.TR</a>
+    <span></span>
     <div class="links">
-      <a href="index.html">Anasayfa</a>
-      <a href="harita.html">Harita</a>
-      <a href="diger-istatistikler.html">Diğer İstatistikler</a>
+      <a href="https://www.uab.gov.tr" target="_blank" rel="noopener">UAB.GOV.TR</a>
       <a href="site-haritasi.html">Site Haritası</a>
       <a href="iletisim.html">İletişim</a>
+      <a href="https://www.uab.gov.tr/en" target="_blank" rel="noopener">English</a>
     </div>
   </div></div>
   <header class="site-header">
