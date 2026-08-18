@@ -4,29 +4,30 @@
    ============================================================ */
 (function () {
   "use strict";
-  const D = window.MARITIME_DATA;
-  if (!D) return;
-  const U = window.MDUtil, C = window.MDCharts, H = D.headline, T = D.trend;
+  if (!window.MARITIME_DATA) return;
+  const U = window.MDUtil, C = window.MDCharts;
   const icon = window.__icon, arrow = window.__arrow;
+  // Veri Supabase'den (veya gömülü) geldiğinde doldurulur:
+  let H, T;
 
-  // KPI tanımları — her biri veriden gelir
+  // KPI tanımları — trend, anahtarla (trendKey) çalışma anında okunur
   const KPIS = [
     { key: "yuk_ton", href: "yuk.html", ic: "yuk", c: "--c-yuk", unit: "ton",
-      label: "Elleçlenen Yük", sub: "Limanlarda gemilere yüklenen ve indirilen toplam yük", trend: T.yuk_ton },
+      label: "Elleçlenen Yük", sub: "Limanlarda gemilere yüklenen ve indirilen toplam yük", trendKey: "yuk_ton" },
     { key: "konteyner_teu", href: "konteyner.html", ic: "konteyner", c: "--c-konteyner", unit: "TEU",
-      label: "Konteyner", sub: "Standart konteyner (TEU) elleçleme", trend: T.konteyner_teu },
+      label: "Konteyner", sub: "Standart konteyner (TEU) elleçleme", trendKey: "konteyner_teu" },
     { key: "gemi_sayisi", href: "gemi.html", ic: "gemi", c: "--c-gemi", unit: "gemi",
-      label: "Uğrayan Gemi", sub: "Limanlarımıza gelen gemi sayısı", trend: T.gemi_gros_ton },
+      label: "Uğrayan Gemi", sub: "Limanlarımıza gelen gemi sayısı", trendKey: "gemi_gros_ton" },
     { key: "bogaz_gecis", href: "bogazlar.html", ic: "bogaz", c: "--c-bogaz", unit: "geçiş",
-      label: "Boğaz Gemi Geçişi", sub: "İstanbul Boğazı'ndan geçen gemi sayısı", trend: null },
+      label: "Boğaz Gemi Geçişi", sub: "İstanbul Boğazı'ndan geçen gemi sayısı", trendKey: null },
     { key: "kruvaziyer_yolcu", href: "kruvaziyer.html", ic: "kruvaziyer", c: "--c-kruvaziyer", unit: "yolcu",
-      label: "Kruvaziyer Yolcusu", sub: "Türkiye limanlarını ziyaret eden yolcular", trend: T.kruvaziyer_yolcu },
+      label: "Kruvaziyer Yolcusu", sub: "Türkiye limanlarını ziyaret eden yolcular", trendKey: "kruvaziyer_yolcu" },
     { key: "roro_arac", href: "roro.html", ic: "roro", c: "--c-roro", unit: "araç",
-      label: "RO-RO ile Araç", sub: "Denizyoluyla taşınan araç sayısı", trend: T.roro_arac_yil },
+      label: "RO-RO ile Araç", sub: "Denizyoluyla taşınan araç sayısı", trendKey: "roro_arac_yil" },
     { key: "kabotaj_yolcu", href: "kabotaj.html", ic: "kabotaj", c: "--c-kabotaj", unit: "yolcu",
-      label: "Kabotaj Yolcusu", sub: "İç sularda vapur ve feribotla taşınan yolcu", trend: T.kabotaj_yolcu },
+      label: "Kabotaj Yolcusu", sub: "İç sularda vapur ve feribotla taşınan yolcu", trendKey: "kabotaj_yolcu" },
     { key: "filo_gemi", href: "filo.html", ic: "filo", c: "--c-filo", unit: "gemi",
-      label: "Türk Ticaret Filosu", sub: "1.000 GT ve üzeri Türk bayraklı gemi", trend: null },
+      label: "Türk Ticaret Filosu", sub: "1.000 GT ve üzeri Türk bayraklı gemi", trendKey: null },
   ];
 
   function card(k) {
@@ -57,17 +58,24 @@
     // sparkline'ları çiz
     setTimeout(() => {
       KPIS.forEach((k) => {
-        if (!k.trend) return;
+        const tr = k.trendKey && T[k.trendKey];
+        if (!tr) return;
         const host = document.getElementById("spark-" + k.key);
-        const ys = Object.keys(k.trend).sort();
-        C.spark(host, ys.map((y) => k.trend[y]), getComputedStyle(document.documentElement).getPropertyValue(k.c).trim());
+        const ys = Object.keys(tr).sort();
+        C.spark(host, ys.map((y) => tr[y]), getComputedStyle(document.documentElement).getPropertyValue(k.c).trim());
       });
       window.MDScan && window.MDScan();
     }, 60);
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  function start() {
+    H = window.MARITIME_DATA.headline;
+    T = window.MARITIME_DATA.trend;
     render();
     window.MDObserve && window.MDObserve();
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    (window.MD_READY || Promise.resolve()).then(start);
   });
 })();

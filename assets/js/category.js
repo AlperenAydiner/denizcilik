@@ -4,9 +4,9 @@
    ============================================================ */
 (function () {
   "use strict";
-  const D = window.MARITIME_DATA;
-  if (!D) return;
-  const U = window.MDUtil, C = window.MDCharts, H = D.headline, P = D.ports, T = D.trend;
+  if (!window.MARITIME_DATA) return;
+  const U = window.MDUtil, C = window.MDCharts;
+  let H, P, T; // veri hazır olunca doldurulur
   const A = window.ARCHIVE_DATA || {};
   const icon = window.__icon, arrow = window.__arrow;
   const GOV = "https://denizcilikistatistikleri.uab.gov.tr";
@@ -15,35 +15,35 @@
   const CFG = {
     yuk: { title: "Yük İstatistikleri", ic: "yuk", accent: "--c-yuk", unit: "ton",
       intro: "Türkiye limanlarında gemilere yüklenen ve gemilerden indirilen — yani <b>elleçlenen</b> — toplam yük.",
-      headKey: "yuk_ton", portField: "yuk_ton", trend: T.yuk_ton, trendName: "Elleçlenen yük", trendUnit: "ton",
+      headKey: "yuk_ton", portField: "yuk_ton", trendKey: "yuk_ton", trendName: "Elleçlenen yük", trendUnit: "ton",
       arch: "yuk", insight: "Bu rakam ülkenin dış ticaretinin denizden akan bölümünün en temel göstergesidir. Yükün büyük kısmı Marmara ve Akdeniz'deki büyük limanlardan elleçlenir." },
     konteyner: { title: "Konteyner İstatistikleri", ic: "konteyner", accent: "--c-konteyner", unit: "TEU",
       intro: "Limanlarda elleçlenen konteyner miktarı. Birim <b>TEU</b>: yirmi fitlik (yaklaşık 6 m) standart bir konteyner = 1 TEU.",
-      headKey: "konteyner_teu", portField: "konteyner_teu", trend: T.konteyner_teu, trendName: "Konteyner", trendUnit: "TEU",
+      headKey: "konteyner_teu", portField: "konteyner_teu", trendKey: "konteyner_teu", trendName: "Konteyner", trendUnit: "TEU",
       arch: "konteyner", insight: "Konteyner trafiği işlenmiş ürün ticaretinin göstergesidir. İstikrarlı artış Türkiye'nin bir aktarma ve üretim merkezi olarak güçlendiğine işaret eder." },
     gemi: { title: "Gemi İstatistikleri", ic: "gemi", accent: "--c-gemi", unit: "gemi",
       intro: "Türkiye limanlarına uğrayan gemilerin sayısı ve toplam büyüklüğü (gros ton).",
-      headKey: "gemi_sayisi", trend: T.gemi_gros_ton, trendName: "Uğrayan gemilerin toplam büyüklüğü", trendUnit: "gros ton",
+      headKey: "gemi_sayisi", trendKey: "gemi_gros_ton", trendName: "Uğrayan gemilerin toplam büyüklüğü", trendUnit: "gros ton",
       arch: "gemi", insight: "Gemi sayısı sabit kalırken toplam gros tonun artması, limanlarımıza daha büyük gemilerin geldiğini gösterir." },
     kruvaziyer: { title: "Kruvaziyer İstatistikleri", ic: "kruvaziyer", accent: "--c-kruvaziyer", unit: "yolcu",
       intro: "Türkiye limanlarını ziyaret eden kruvaziyer (yolcu gemisi) yolcularının sayısı.",
-      headKey: "kruvaziyer_yolcu", trend: T.kruvaziyer_yolcu, trendName: "Kruvaziyer yolcusu", trendUnit: "kişi",
+      headKey: "kruvaziyer_yolcu", trendKey: "kruvaziyer_yolcu", trendName: "Kruvaziyer yolcusu", trendUnit: "kişi",
       arch: "kruvaziyer", insight: "Kruvaziyer yolcusu son yıllarda hızla toparlandı. Her yolcu, uğradığı liman şehrinde turizm geliri anlamına gelir." },
     roro: { title: "RO-RO Araç İstatistikleri", ic: "roro", accent: "--c-roro", unit: "araç",
       intro: "<b>RO-RO</b>, araçların tekerlekleri üzerinde gemiye girip indiği taşımacılıktır.",
-      headKey: "roro_arac", trend: T.roro_arac_yil, trendName: "Taşınan araç", trendUnit: "araç",
+      headKey: "roro_arac", trendKey: "roro_arac_yil", trendName: "Taşınan araç", trendUnit: "araç",
       arch: "roro", insight: "RO-RO hatları TIR ve kamyonların karayolu yerine denizi kullanmasını sağlar — hem yakıt tasarrufu hem daha az karayolu trafiği." },
     kabotaj: { title: "Kabotaj İstatistikleri", ic: "kabotaj", accent: "--c-kabotaj", unit: "yolcu",
       intro: "<b>Kabotaj</b>, bir ülkenin kendi limanları arasında yaptığı deniz taşımacılığıdır.",
-      headKey: "kabotaj_yolcu", trend: T.kabotaj_yolcu, trendName: "Kabotaj yolcusu", trendUnit: "kişi",
+      headKey: "kabotaj_yolcu", trendKey: "kabotaj_yolcu", trendName: "Kabotaj yolcusu", trendUnit: "kişi",
       arch: "kabotaj", insight: "Şehir hattı vapurları ve feribotlarla her yıl 100 milyondan fazla yolculuk denizden yapılıyor — deniz ulaşımının günlük hayattaki yeri." },
     bogazlar: { title: "Türk Boğazları Gemi Geçiş İstatistikleri", ic: "bogaz", accent: "--c-bogaz", unit: "gemi",
       intro: "İstanbul ve Çanakkale Boğazları'ndan geçen gemi sayısı.",
-      headKey: "bogaz_gecis", trend: null, trendName: "Boğaz gemi geçişi", trendUnit: "gemi",
+      headKey: "bogaz_gecis", trendKey: null, trendName: "Boğaz gemi geçişi", trendUnit: "gemi",
       arch: "bogazlar", insight: "Her gün ortalama 100'den fazla gemi İstanbul Boğazı'ndan geçiyor. Bu su yolları tüm dünya deniz ticareti için kritiktir." },
     filo: { title: "Filo İstatistikleri", ic: "filo", accent: "--c-filo", unit: "gemi",
       intro: "Türk bayrağı taşıyan deniz ticaret filosu (1.000 GT ve üzeri).",
-      headKey: "filo_gemi", trend: null, trendName: "Filo", trendUnit: "gemi",
+      headKey: "filo_gemi", trendKey: null, trendName: "Filo", trendUnit: "gemi",
       arch: "filo", insight: "Güçlü bir milli filo taşımacılıkta dışa bağımlılığı azaltır ve deniz ticareti gelirinin ülkede kalmasını sağlar." },
   };
 
@@ -53,16 +53,12 @@
   if (!cfg || !host) return;
   document.title = cfg.title + " — T.C. UAB Denizcilik İstatistikleri";
 
-  const m = H[cfg.headKey];
-  const accent = getComputedStyle(document.documentElement).getPropertyValue(cfg.accent).trim();
-  const trendYears = cfg.trend ? Object.keys(cfg.trend).sort() : [];
   const SEAS = ["Marmara", "Ege", "Akdeniz", "Karadeniz"];
+  // Veri hazır olunca doldurulur:
+  let m, accent, trendYears, state;
 
-  // Filtre durumu
-  const state = { year: m.yil, region: "all" };
-
-  /* ---------- İskelet ---------- */
-  host.innerHTML = `
+  function buildSkeleton() {
+    host.innerHTML = `
     <section class="page-hero"><div class="wrap">
       <div class="breadcrumb"><a href="index.html">Anasayfa</a> ${arrow("right")} <span>${cfg.title}</span></div>
       <div class="page-title">
@@ -80,6 +76,7 @@
 
       <div class="cat-archive" id="catArchive"></div>
     </div></section>`;
+  }
 
   /* ---------- Filtre paneli ---------- */
   function renderFilters() {
@@ -197,8 +194,20 @@
       </details>`).join("")}`;
   }
 
-  renderFilters();
-  renderDash();
-  renderArchive();
-  window.MDScan && window.MDScan();
+  function start() {
+    const MD = window.MARITIME_DATA;
+    H = MD.headline; P = MD.ports; T = MD.trend;
+    cfg.trend = cfg.trendKey ? T[cfg.trendKey] : null;
+    m = H[cfg.headKey];
+    accent = getComputedStyle(document.documentElement).getPropertyValue(cfg.accent).trim();
+    trendYears = cfg.trend ? Object.keys(cfg.trend).sort() : [];
+    state = { year: m.yil, region: "all" };
+    buildSkeleton();
+    renderFilters();
+    renderDash();
+    renderArchive();
+    window.MDScan && window.MDScan();
+  }
+
+  (window.MD_READY || Promise.resolve()).then(start);
 })();

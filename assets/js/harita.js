@@ -3,12 +3,14 @@
    ============================================================ */
 (function () {
   "use strict";
-  const D = window.MARITIME_DATA;
-  if (!D) return;
-  const U = window.MDUtil, P = D.ports;
+  if (!window.MARITIME_DATA) return;
+  const U = window.MDUtil;
+  let D, P;
   const host = document.getElementById("pageContent");
   if (!host) return;
 
+  function start() {
+  D = window.MARITIME_DATA; P = D.ports;
   host.innerHTML = `
     <section class="page-hero"><div class="wrap">
       <div class="breadcrumb reveal"><a href="index.html">Anasayfa</a> ${window.__arrow("right")} <span>Harita</span></div>
@@ -83,4 +85,7 @@
   })();
 
   window.MDScan && window.MDScan();
+  }
+
+  (window.MD_READY || Promise.resolve()).then(start);
 })();
