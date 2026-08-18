@@ -2,8 +2,9 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
+<script src="assets/js/boot.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Site Haritası — T.C. UAB Denizcilik Verileri</title>
+<title data-i18n-title="sm.title">Site Haritası — T.C. UAB Denizcilik Verileri</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,600;1,700&display=swap" rel="stylesheet">
@@ -16,26 +17,27 @@
 <div id="site-header"></div>
 <main>
   <section class="page-hero"><div class="wrap">
-    <div class="breadcrumb"><a href="index.html">Anasayfa</a> › <span>Site Haritası</span></div>
-    <h1>Site Haritası</h1>
-    <p class="intro">Platformdaki tüm sayfalar tek bakışta.</p>
+    <div class="breadcrumb"><a href="index.html" data-i18n="bc.home">Anasayfa</a> › <span data-i18n="sm.bc">Site Haritası</span></div>
+    <h1 data-i18n="sm.h1">Site Haritası</h1>
+    <p class="intro" data-i18n="sm.intro">Platformdaki tüm sayfalar tek bakışta.</p>
   </div></section>
   <section class="section" style="padding-top:20px"><div class="wrap">
     <div class="cat-grid" style="grid-template-columns:repeat(3,1fr)">
-      <div class="chart-card reveal"><h3 style="justify-content:flex-start">Deniz Ticareti</h3>
-        <div class="footer-col" style="margin-top:12px"><a href="yuk.html">Yük</a><a href="konteyner.html">Konteyner</a><a href="kabotaj.html">Kabotaj</a></div></div>
-      <div class="chart-card reveal d1"><h3 style="justify-content:flex-start">Gemiler</h3>
-        <div class="footer-col" style="margin-top:12px"><a href="gemi.html">Gemi</a><a href="filo.html">Filo</a><a href="bogazlar.html">Türk Boğazları</a></div></div>
-      <div class="chart-card reveal d2"><h3 style="justify-content:flex-start">Yolcu & Taşımacılık</h3>
-        <div class="footer-col" style="margin-top:12px"><a href="kruvaziyer.html">Kruvaziyer</a><a href="roro.html">RO-RO</a></div></div>
-      <div class="chart-card reveal"><h3 style="justify-content:flex-start">Keşfet</h3>
-        <div class="footer-col" style="margin-top:12px"><a href="index.html">Anasayfa</a><a href="harita.html">Limanlar Haritası</a><a href="arsiv.html">Arşiv</a><a href="diger-istatistikler.html">Diğer İstatistikler</a></div></div>
-      <div class="chart-card reveal d1"><h3 style="justify-content:flex-start">Kurum</h3>
-        <div class="footer-col" style="margin-top:12px"><a href="iletisim.html">İletişim</a><a href="https://denizcilik.uab.gov.tr/" target="_blank" rel="noopener">Denizcilik G.M.</a><a href="https://www.uab.gov.tr" target="_blank" rel="noopener">Bakanlık</a></div></div>
+      <div class="chart-card reveal"><h3 style="justify-content:flex-start" data-i18n="sm.g1">Deniz Ticareti</h3>
+        <div class="footer-col" style="margin-top:12px"><a href="yuk.html" data-i18n="nav.yuk">Yük</a><a href="konteyner.html" data-i18n="nav.konteyner">Konteyner</a><a href="kabotaj.html" data-i18n="nav.kabotaj">Kabotaj</a></div></div>
+      <div class="chart-card reveal d1"><h3 style="justify-content:flex-start" data-i18n="sm.g2">Gemiler</h3>
+        <div class="footer-col" style="margin-top:12px"><a href="gemi.html" data-i18n="nav.gemi">Gemi</a><a href="filo.html" data-i18n="nav.filo">Filo</a><a href="bogazlar.html" data-i18n="nav.bogazlar">Türk Boğazları</a></div></div>
+      <div class="chart-card reveal d2"><h3 style="justify-content:flex-start" data-i18n="sm.g3">Yolcu & Taşımacılık</h3>
+        <div class="footer-col" style="margin-top:12px"><a href="kruvaziyer.html" data-i18n="nav.kruvaziyer">Kruvaziyer</a><a href="roro.html" data-i18n="nav.roro">RO-RO</a></div></div>
+      <div class="chart-card reveal"><h3 style="justify-content:flex-start" data-i18n="sm.g4">Keşfet</h3>
+        <div class="footer-col" style="margin-top:12px"><a href="index.html" data-i18n="bc.home">Anasayfa</a><a href="harita.html" data-i18n="sm.portsmap">Limanlar Haritası</a><a href="dosyalar.html" data-i18n="nav.dosyalar">Dosyalar</a><a href="diger-istatistikler.html" data-i18n="foot.other">Diğer İstatistikler</a></div></div>
+      <div class="chart-card reveal d1"><h3 style="justify-content:flex-start" data-i18n="sm.g5">Kurum</h3>
+        <div class="footer-col" style="margin-top:12px"><a href="iletisim.html" data-i18n="top.contact">İletişim</a><a href="https://denizcilik.uab.gov.tr/" target="_blank" rel="noopener" data-i18n="foot.dgm">Denizcilik G.M.</a><a href="https://www.uab.gov.tr" target="_blank" rel="noopener" data-i18n="sm.ministry">Bakanlık</a></div></div>
     </div>
   </div></section>
 </main>
 <div id="site-footer"></div>
+<script src="assets/js/i18n.js"></script>
 <script src="assets/js/main.js"></script>
 <script src="assets/js/layout.js"></script>
 </body>

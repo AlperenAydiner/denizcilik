@@ -1,12 +1,16 @@
 /* ============================================================
-   archive.js — resmi istatistik dosyalarının tam arşivi
+   archive.js — resmi istatistik dosyalarının tam listesi (iki dilli)
    Kategori → yıl → dosya listesi + arama
    ============================================================ */
 (function () {
   "use strict";
   const A = window.ARCHIVE_DATA;
+  const I = window.I18N;
   const host = document.getElementById("archiveApp");
   if (!A || !host) return;
+
+  const nfLoc = (I && I.locale) || "tr-TR";
+  const catLabel = (k) => I.t("nav." + k);
 
   const keys = Object.keys(A);
   const total = keys.reduce((s, k) => s + Object.values(A[k].yillar).reduce((t, v) => t + v.length, 0), 0);
@@ -18,22 +22,21 @@
   host.innerHTML = `
     <div class="archive-bar">
       <div class="archive-tabs" id="archTabs">
-        ${keys.map((k) => `<button data-k="${k}" class="${k === active ? "on" : ""}">${A[k].baslik}
+        ${keys.map((k) => `<button data-k="${k}" class="${k === active ? "on" : ""}">${catLabel(k)}
           <span>${Object.values(A[k].yillar).reduce((t, v) => t + v.length, 0)}</span></button>`).join("")}
       </div>
       <div class="archive-search">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-        <input type="search" id="archQ" placeholder="Dosya adında ara…" aria-label="Dosya ara">
+        <input type="search" id="archQ" placeholder="${I.t("files.search")}" aria-label="${I.t("files.searchAria")}">
       </div>
     </div>
-    <div class="archive-total">Arşivde toplam <b>${total.toLocaleString("tr-TR")}</b> resmi istatistik dosyası listeleniyor.</div>
+    <div class="archive-total">${I.t("files.total", { n: total.toLocaleString(nfLoc) })}</div>
     <div id="archBody"></div>`;
 
   function render() {
     const cat = A[active];
     const body = document.getElementById("archBody");
     const q = query.trim().toLocaleLowerCase("tr");
-    // JS, sayı benzeri nesne anahtarlarını artan sıraya alır — yeniden en yeniden eskiye sırala
     const years = Object.keys(cat.yillar).sort((a, b) => {
       const na = parseInt(a, 10), nb = parseInt(b, 10);
       if (isNaN(na)) return 1;
@@ -50,7 +53,7 @@
       shown += files.length;
       const open = q ? true : i < 2;
       html += `<details class="arch-year" ${open ? "open" : ""}>
-        <summary><span class="yr">${y}</span><span class="cnt">${files.length} dosya</span>
+        <summary><span class="yr">${y}</span><span class="cnt">${I.t("files.count", { n: files.length })}</span>
           <svg class="chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
         <ul class="arch-files">
           ${files.map((f) => `<li><a href="${f.url}" target="_blank" rel="noopener">${fileIcon}<span>${f.ad}</span><em>XLS</em></a></li>`).join("")}
@@ -58,7 +61,7 @@
     });
 
     body.innerHTML = shown ? html
-      : `<div class="arch-empty">“${query}” için ${cat.baslik} kategorisinde dosya bulunamadı.</div>`;
+      : `<div class="arch-empty">${I.t("files.empty", { q: query, c: catLabel(active) })}</div>`;
   }
 
   document.getElementById("archTabs").addEventListener("click", (e) => {

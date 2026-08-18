@@ -713,6 +713,151 @@ body::after {
   .bigstats .cell { border-right: none; }
 }
 
+/* ============================================================
+   Dil / Tema anahtar butonları
+   ============================================================ */
+.topbar .links { align-items: center; gap: 20px; }
+.topbar-tag { font-size: 0.74rem; color: var(--text-dim); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; }
+.lang-btn, .theme-btn {
+  display: inline-flex; align-items: center; gap: 6px; background: transparent; border: none;
+  color: var(--text-dim); font: inherit; font-size: 0.78rem; font-weight: 600;
+  padding: 4px 7px; border-radius: 8px; transition: color 0.2s, background 0.2s;
+}
+.lang-btn:hover, .theme-btn:hover { color: var(--accent); background: var(--surface-2); }
+.lang-btn svg, .theme-btn svg { width: 15px; height: 15px; }
+.theme-btn svg:nth-child(1) { display: none; }   /* sun */
+.theme-btn svg:nth-child(2) { display: block; }   /* moon (light mode → switch to dark) */
+:root[data-theme="dark"] .theme-btn svg:nth-child(1) { display: block; }
+:root[data-theme="dark"] .theme-btn svg:nth-child(2) { display: none; }
+
+.nav-mobile-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+.lang-btn-m, .theme-btn-m {
+  display: none; align-items: center; gap: 6px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-soft);
+  padding: 9px 11px; border-radius: 11px;
+}
+.lang-btn-m span { font-size: 0.8rem; }
+.lang-btn-m:hover, .theme-btn-m:hover { color: var(--white); background: var(--surface-2); }
+
+/* ============================================================
+   Mobil menü (açılır liste)
+   ============================================================ */
+.site-header .nav { position: relative; }
+@media (max-width: 1080px) {
+  .lang-btn-m, .theme-btn-m { display: inline-flex; }
+  .mainmenu.open-mobile {
+    display: flex; flex-direction: column; position: absolute; left: 0; right: 0; top: 100%;
+    background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    padding: 8px 24px 14px; gap: 0; box-shadow: var(--shadow); z-index: 70;
+  }
+  .mainmenu.open-mobile > li { display: block; width: 100%; }
+  .mainmenu.open-mobile > li > a {
+    padding: 13px 4px; font-size: 0.9rem; border-bottom: 1px solid var(--border);
+    border-left: 3px solid transparent; letter-spacing: 0.02em;
+  }
+  .mainmenu.open-mobile > li:last-child > a { border-bottom: none; }
+  .mainmenu.open-mobile > li.active > a { border-left-color: var(--accent); border-bottom-color: var(--border); color: var(--white); }
+  .menu-toggle.is-open { color: var(--white); background: var(--surface-2); }
+}
+
+/* Küçük ekran ince ayarları */
+@media (max-width: 640px) {
+  html { scroll-padding-top: 120px; }
+  body { font-size: 16px; }
+  .wrap { width: min(100% - 32px, var(--wrap)); }
+  .nav { min-height: 68px; gap: 12px; }
+  .brand-mark { padding: 9px 12px; }
+  .brand-logo { width: 118px; }
+  .brand-divider, .brand-sub { display: none; }
+  .dash { padding: 32px 0 60px; }
+  .dash-head { margin-bottom: 26px; }
+  .dash-year { font-size: 2.6rem; }
+  .section { padding: 56px 0; }
+  .page-hero { padding: 40px 0 20px; }
+  .kpi-card, .contact-card { padding: 20px; }
+  .cat-wrap { padding: 14px 0 56px; }
+  .footer-top { grid-template-columns: 1fr 1fr; gap: 26px; padding: 44px 0 30px; }
+  .footer-brand { grid-column: 1 / -1; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; }
+  .lang-btn-m span { display: none; }
+}
+@media (max-width: 400px) {
+  .footer-top { grid-template-columns: 1fr; }
+}
+
+/* Tablo yatay kaydırma (mobil) */
+.data-table { min-width: 480px; }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ============================================================
+   KOYU TEMA (deniz gecesi) — token ve bileşen düzeltmeleri
+   ============================================================ */
+:root[data-theme="dark"] {
+  --navy-950: #081521;
+  --navy-900: #0d2030;
+  --navy-850: #0f2536;
+  --navy-800: #13293b;
+  --navy-700: #1a3346;
+  --foam: #0f2536;
+  --white: #eef6fb;
+  --off: #0f2536;
+  --ink: #cde0ec;
+
+  --bg: var(--navy-950);
+  --bg-alt: var(--navy-900);
+  --surface: #0e2233;
+  --surface-2: #143046;
+  --border: rgba(150, 200, 220, 0.13);
+  --border-strong: rgba(150, 200, 220, 0.26);
+  --text: #b6c9d6;
+  --text-soft: #93a9b8;
+  --text-dim: #6e8697;
+  --accent: var(--sea-500);
+
+  --shadow: 0 22px 50px -22px rgba(0, 0, 0, 0.72);
+  --shadow-soft: 0 2px 12px -2px rgba(0, 0, 0, 0.5);
+
+  /* Koyu zeminde biraz daha canlı kategori renkleri */
+  --c-gemi: #4f8ce0;
+  --c-kabotaj: #35abe0;
+  --c-bogaz: #8f7bea;
+  --c-kruvaziyer: #e56a9c;
+}
+:root[data-theme="dark"] body::before {
+  background:
+    radial-gradient(1100px 640px at 78% -8%, rgba(0, 184, 174, 0.14), transparent 60%),
+    linear-gradient(180deg, #0a1a29, #081521 55%, #06111c);
+}
+:root[data-theme="dark"] body::after {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(150, 200, 220, 0.05) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(90deg, rgba(150, 200, 220, 0.05) 0 1px, transparent 1px 64px);
+  opacity: 0.6;
+}
+:root[data-theme="dark"] .topbar,
+:root[data-theme="dark"] .site-footer { background: var(--bg-alt); }
+:root[data-theme="dark"] .mapviz .frame,
+:root[data-theme="dark"] .voyage .stage { background: linear-gradient(165deg, #0e2434, #0a1b28); }
+:root[data-theme="dark"] .mapviz .controls,
+:root[data-theme="dark"] .map-tooltip,
+:root[data-theme="dark"] .chart-tip,
+:root[data-theme="dark"] .term::after,
+:root[data-theme="dark"] .hero-ship .tagline { background: #0f2739; }
+:root[data-theme="dark"] .map .land,
+:root[data-theme="dark"] .bigmap .land { fill: #163449; stroke: #2f5a70; filter: none; }
+:root[data-theme="dark"] .map .port-label,
+:root[data-theme="dark"] .bigmap .port-label { fill: #dce9f0; stroke: rgba(8,21,33,0.9); }
+:root[data-theme="dark"] .kpi-delta.up, :root[data-theme="dark"] .delta.up { color: #46c99e; background: rgba(47,157,98,0.18); }
+:root[data-theme="dark"] .kpi-delta.down, :root[data-theme="dark"] .delta.down { color: #ef7ba0; background: rgba(209,73,127,0.18); }
+:root[data-theme="dark"] .arch-files a em { background: rgba(0,184,174,0.18); color: var(--sea-400); }
+:root[data-theme="dark"] .btn-primary { color: #04222a; }
+
+/* Renk geçişlerini yumuşat (tema değişiminde) */
+body, .site-header, .topbar, .site-footer, .kpi-card, .cat-card, .chart-card,
+.dash-stat, .dash-card, .cat-filters, .contact-card, .arch-year {
+  transition: background-color 0.35s var(--ease), border-color 0.35s var(--ease), color 0.35s var(--ease);
+}
+
 /* Erişilebilirlik: hareketi azalt */
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition-duration: 0.01ms !important; }

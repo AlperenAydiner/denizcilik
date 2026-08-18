@@ -6,21 +6,28 @@
   const D = window.MARITIME_DATA || {};
   window.MD = D;
 
-  /* ---------- Sayı biçimlendirme (Türkçe) ---------- */
-  const nf0 = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 0 });
-  const nf1 = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 });
+  /* ---------- Sayı biçimlendirme (dile duyarlı) ---------- */
+  const LOC = (window.I18N && window.I18N.locale) || "tr-TR";
+  const SCALE = (window.I18N && window.I18N.scale) || ((u) => u);
+  const nf0 = new Intl.NumberFormat(LOC, { maximumFractionDigits: 0 });
+  const nf1 = new Intl.NumberFormat(LOC, { maximumFractionDigits: 1 });
 
-  // Ham sayı → "531,7 milyon" gibi vatandaş-dostu ifade
+  // Ham sayı → "531,7 milyon" / "531.7 million" gibi vatandaş-dostu ifade
   function human(n) {
     const a = Math.abs(n);
-    if (a >= 1e9) return { v: nf1.format(n / 1e9), u: "milyar" };
-    if (a >= 1e6) return { v: nf1.format(n / 1e6), u: "milyon" };
-    if (a >= 1e3) return { v: nf0.format(n / 1e3), u: "bin" };
+    if (a >= 1e9) return { v: nf1.format(n / 1e9), u: SCALE("milyar") };
+    if (a >= 1e6) return { v: nf1.format(n / 1e6), u: SCALE("milyon") };
+    if (a >= 1e3) return { v: nf0.format(n / 1e3), u: SCALE("bin") };
     return { v: nf0.format(n), u: "" };
   }
   function fmt(n) { return nf0.format(n); }
+  // Yüzde: TR "%12,5" · EN "12.5%"
+  function pct(n) {
+    const s = nf1.format(Math.abs(n));
+    return (window.I18N && window.I18N.lang === "en") ? s + "%" : "%" + s;
+  }
 
-  window.MDUtil = { human, fmt, nf0, nf1 };
+  window.MDUtil = { human, fmt, pct, nf0, nf1, loc: LOC };
 
   /* ---------- Paylaşılan ikon seti ---------- */
   const ICONS = {
@@ -46,7 +53,7 @@
     const decimals = parseInt(el.dataset.dec || "0", 10);
     const dur = 1500;
     const start = performance.now();
-    const fmtLocal = new Intl.NumberFormat("tr-TR", {
+    const fmtLocal = new Intl.NumberFormat(LOC, {
       minimumFractionDigits: decimals, maximumFractionDigits: decimals,
     });
     // rAF çalışmayan ortamlarda (gizli sekme) nihai değeri koru
@@ -113,9 +120,15 @@
     if (!toggle || !menu) return;
     toggle.addEventListener("click", () => {
       const open = menu.classList.toggle("open-mobile");
-      menu.style.cssText = open
-        ? "display:flex;position:absolute;top:76px;left:0;right:0;flex-direction:column;background:var(--navy-900);padding:16px 24px;border-bottom:1px solid var(--border);gap:4px;"
-        : "";
+      toggle.classList.toggle("is-open", open);
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    // Bir bağlantıya tıklanınca menüyü kapat
+    menu.addEventListener("click", (e) => {
+      if (e.target.closest("a")) {
+        menu.classList.remove("open-mobile");
+        toggle.classList.remove("is-open");
+      }
     });
   }
 
