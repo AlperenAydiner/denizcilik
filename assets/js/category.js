@@ -1,179 +1,204 @@
 /* ============================================================
-   category.js — kategori sayfaları için ortak render motoru
-   body[data-cat] değerine göre içeriği veriden üretir
+   category.js — kategori sayfası
+   SOL: filtre paneli · SAĞ: detaylı grafik-dashboard · ALT: Excel arşivi
    ============================================================ */
 (function () {
   "use strict";
   const D = window.MARITIME_DATA;
   if (!D) return;
   const U = window.MDUtil, C = window.MDCharts, H = D.headline, P = D.ports, T = D.trend;
-  const icon = window.__icon || (() => "");
-  const arrow = window.__arrow || (() => "");
+  const A = window.ARCHIVE_DATA || {};
+  const icon = window.__icon, arrow = window.__arrow;
   const GOV = "https://denizcilikistatistikleri.uab.gov.tr";
+  const nf = U.fmt;
 
   const CFG = {
-    yuk: {
-      title: "Yük İstatistikleri", ic: "yuk", accent: "var(--c-yuk)",
-      intro: "Türkiye limanlarında gemilere yüklenen ve gemilerden indirilen — yani <b>elleçlenen</b> — toplam yük. Bu rakam, ülkenin dış ticaretinin denizden akan bölümünün en temel göstergesidir.",
-      headKey: "yuk_ton", unit: "ton", portField: "yuk_ton", trend: T.yuk_ton, trendName: "Elleçlenen yük", trendUnit: "ton",
-      source: "/yuk-istatistikleri",
-      insight: "2024'te elleçlenen yük, bir önceki yıla göre arttı. Bu artış, kabaca yüzlerce büyük yük gemisinin ek olarak taşıdığı kapasiteye denk gelir — Türkiye limanlarının dünya ticaretindeki payının büyüdüğünü gösterir.",
-    },
-    konteyner: {
-      title: "Konteyner İstatistikleri", ic: "konteyner", accent: "var(--c-konteyner)",
-      intro: "Limanlarda elleçlenen konteyner miktarı. Birim <b>TEU</b>'dur: yirmi fitlik (yaklaşık 6 metre) standart bir konteyner = 1 TEU.",
-      headKey: "konteyner_teu", unit: "TEU", portField: "konteyner_teu", trend: T.konteyner_teu, trendName: "Konteyner", trendUnit: "TEU",
-      source: "/konteyner-istatistikleri",
-      insight: "Konteyner trafiği, hazır giyimden elektroniğe işlenmiş ürün ticaretinin göstergesidir. İstikrarlı artış, Türkiye'nin bir aktarma ve üretim merkezi olarak güçlendiğine işaret eder.",
-    },
-    gemi: {
-      title: "Gemi İstatistikleri", ic: "gemi", accent: "var(--c-gemi)",
-      intro: "Türkiye limanlarına uğrayan gemilerin sayısı ve toplam büyüklüğü (gros ton). Bir yılda limanlarımıza kaç geminin geldiğini gösterir.",
-      headKey: "gemi_sayisi", unit: "gemi", trend: T.gemi_gros_ton, trendName: "Uğrayan gemilerin toplam büyüklüğü", trendUnit: "gros ton",
-      source: "/gemi-istatistikleri",
-      insight: "Gemi sayısı yaklaşık sabit kalırken toplam gros tonun artması, limanlarımıza <b>daha büyük gemilerin</b> geldiğini gösterir — bu da liman altyapısının büyük gemileri ağırlayabildiği anlamına gelir.",
-    },
-    kruvaziyer: {
-      title: "Kruvaziyer İstatistikleri", ic: "kruvaziyer", accent: "var(--c-kruvaziyer)",
-      intro: "Türkiye limanlarını ziyaret eden kruvaziyer (yolcu gemisi) yolcularının sayısı. Deniz turizminin gücünü gösterir.",
-      headKey: "kruvaziyer_yolcu", unit: "yolcu", trend: T.kruvaziyer_yolcu, trendName: "Kruvaziyer yolcusu", trendUnit: "kişi",
-      source: "/kruvaziyer-istatistikleri",
-      insight: "Kruvaziyer yolcusu son yıllarda hızla toparlandı ve 2024'te 2015 seviyelerine yaklaştı. Her yolcu, uğradığı liman şehrinde turizm geliri anlamına gelir.",
-    },
-    roro: {
-      title: "RO-RO Araç İstatistikleri", ic: "roro", accent: "var(--c-roro)",
-      intro: "<b>RO-RO</b> (Roll-on/Roll-off), araçların tekerlekleri üzerinde gemiye girip indiği taşımacılıktır. Bu rakam, denizyoluyla taşınan araç sayısını gösterir.",
-      headKey: "roro_arac", unit: "araç", trend: T.roro_arac_yil, trendName: "Taşınan araç", trendUnit: "araç",
-      source: "/ro-ro-arac-istatistikleri",
-      insight: "RO-RO hatları, TIR ve kamyonların karayolu yerine denizi kullanmasını sağlar. Bu da hem yakıt tasarrufu hem de daha az karayolu trafiği demektir.",
-    },
-    kabotaj: {
-      title: "Kabotaj İstatistikleri", ic: "kabotaj", accent: "var(--c-kabotaj)",
-      intro: "<b>Kabotaj</b>, bir ülkenin kendi limanları arasında, kendi kıyılarında yaptığı deniz taşımacılığıdır. Şehir hattı vapurları ve feribotlarla taşınan milyonlarca yolcu bu kapsamdadır.",
-      headKey: "kabotaj_yolcu", unit: "yolcu", trend: T.kabotaj_yolcu, trendName: "Kabotaj yolcusu", trendUnit: "kişi",
-      source: "/kabotaj-istatistikleri",
-      insight: "Kabotaj yolcusu, deniz ulaşımının günlük hayattaki yerini gösterir. İstanbul'daki vapur seferlerinden Ege'deki feribotlara kadar, her yıl 100 milyondan fazla yolculuk denizden yapılıyor.",
-    },
-    bogazlar: {
-      title: "Türk Boğazları Gemi Geçiş İstatistikleri", ic: "bogaz", accent: "var(--c-bogaz)",
-      intro: "İstanbul ve Çanakkale Boğazları'ndan geçen gemi sayısı. Bu boğazlar, Karadeniz'i Akdeniz'e bağlayan ve dünya ticareti için hayati öneme sahip su yollarıdır.",
-      headKey: "bogaz_gecis", unit: "gemi (İstanbul Boğazı)", trend: null,
-      source: "/turk-bogazlari-gemi-gecis-istatistikleri",
-      insight: "Her gün ortalama 100'den fazla gemi İstanbul Boğazı'ndan geçiyor. Bu yoğunluk, boğazların yalnızca Türkiye için değil, tüm dünya deniz ticareti için ne kadar kritik olduğunu gösterir.",
-    },
-    filo: {
-      title: "Filo İstatistikleri", ic: "filo", accent: "var(--c-filo)",
-      intro: "Türk bayrağı taşıyan deniz ticaret filosu. Bu rakam, 1.000 gros ton ve üzeri Türk sahipli/bayraklı gemilerin sayısını gösterir.",
-      headKey: "filo_gemi", unit: "gemi (1.000 GT+)", trend: null,
-      source: "/filo-istatistikleri",
-      insight: "Güçlü bir milli filo, taşımacılıkta dışa bağımlılığı azaltır ve deniz ticaretinden elde edilen gelirin ülkede kalmasını sağlar.",
-    },
+    yuk: { title: "Yük İstatistikleri", ic: "yuk", accent: "--c-yuk", unit: "ton",
+      intro: "Türkiye limanlarında gemilere yüklenen ve gemilerden indirilen — yani <b>elleçlenen</b> — toplam yük.",
+      headKey: "yuk_ton", portField: "yuk_ton", trend: T.yuk_ton, trendName: "Elleçlenen yük", trendUnit: "ton",
+      arch: "yuk", insight: "Bu rakam ülkenin dış ticaretinin denizden akan bölümünün en temel göstergesidir. Yükün büyük kısmı Marmara ve Akdeniz'deki büyük limanlardan elleçlenir." },
+    konteyner: { title: "Konteyner İstatistikleri", ic: "konteyner", accent: "--c-konteyner", unit: "TEU",
+      intro: "Limanlarda elleçlenen konteyner miktarı. Birim <b>TEU</b>: yirmi fitlik (yaklaşık 6 m) standart bir konteyner = 1 TEU.",
+      headKey: "konteyner_teu", portField: "konteyner_teu", trend: T.konteyner_teu, trendName: "Konteyner", trendUnit: "TEU",
+      arch: "konteyner", insight: "Konteyner trafiği işlenmiş ürün ticaretinin göstergesidir. İstikrarlı artış Türkiye'nin bir aktarma ve üretim merkezi olarak güçlendiğine işaret eder." },
+    gemi: { title: "Gemi İstatistikleri", ic: "gemi", accent: "--c-gemi", unit: "gemi",
+      intro: "Türkiye limanlarına uğrayan gemilerin sayısı ve toplam büyüklüğü (gros ton).",
+      headKey: "gemi_sayisi", trend: T.gemi_gros_ton, trendName: "Uğrayan gemilerin toplam büyüklüğü", trendUnit: "gros ton",
+      arch: "gemi", insight: "Gemi sayısı sabit kalırken toplam gros tonun artması, limanlarımıza daha büyük gemilerin geldiğini gösterir." },
+    kruvaziyer: { title: "Kruvaziyer İstatistikleri", ic: "kruvaziyer", accent: "--c-kruvaziyer", unit: "yolcu",
+      intro: "Türkiye limanlarını ziyaret eden kruvaziyer (yolcu gemisi) yolcularının sayısı.",
+      headKey: "kruvaziyer_yolcu", trend: T.kruvaziyer_yolcu, trendName: "Kruvaziyer yolcusu", trendUnit: "kişi",
+      arch: "kruvaziyer", insight: "Kruvaziyer yolcusu son yıllarda hızla toparlandı. Her yolcu, uğradığı liman şehrinde turizm geliri anlamına gelir." },
+    roro: { title: "RO-RO Araç İstatistikleri", ic: "roro", accent: "--c-roro", unit: "araç",
+      intro: "<b>RO-RO</b>, araçların tekerlekleri üzerinde gemiye girip indiği taşımacılıktır.",
+      headKey: "roro_arac", trend: T.roro_arac_yil, trendName: "Taşınan araç", trendUnit: "araç",
+      arch: "roro", insight: "RO-RO hatları TIR ve kamyonların karayolu yerine denizi kullanmasını sağlar — hem yakıt tasarrufu hem daha az karayolu trafiği." },
+    kabotaj: { title: "Kabotaj İstatistikleri", ic: "kabotaj", accent: "--c-kabotaj", unit: "yolcu",
+      intro: "<b>Kabotaj</b>, bir ülkenin kendi limanları arasında yaptığı deniz taşımacılığıdır.",
+      headKey: "kabotaj_yolcu", trend: T.kabotaj_yolcu, trendName: "Kabotaj yolcusu", trendUnit: "kişi",
+      arch: "kabotaj", insight: "Şehir hattı vapurları ve feribotlarla her yıl 100 milyondan fazla yolculuk denizden yapılıyor — deniz ulaşımının günlük hayattaki yeri." },
+    bogazlar: { title: "Türk Boğazları Gemi Geçiş İstatistikleri", ic: "bogaz", accent: "--c-bogaz", unit: "gemi",
+      intro: "İstanbul ve Çanakkale Boğazları'ndan geçen gemi sayısı.",
+      headKey: "bogaz_gecis", trend: null, trendName: "Boğaz gemi geçişi", trendUnit: "gemi",
+      arch: "bogazlar", insight: "Her gün ortalama 100'den fazla gemi İstanbul Boğazı'ndan geçiyor. Bu su yolları tüm dünya deniz ticareti için kritiktir." },
+    filo: { title: "Filo İstatistikleri", ic: "filo", accent: "--c-filo", unit: "gemi",
+      intro: "Türk bayrağı taşıyan deniz ticaret filosu (1.000 GT ve üzeri).",
+      headKey: "filo_gemi", trend: null, trendName: "Filo", trendUnit: "gemi",
+      arch: "filo", insight: "Güçlü bir milli filo taşımacılıkta dışa bağımlılığı azaltır ve deniz ticareti gelirinin ülkede kalmasını sağlar." },
   };
 
   const cat = document.body.dataset.cat;
   const cfg = CFG[cat];
   const host = document.getElementById("pageContent");
   if (!cfg || !host) return;
-  document.title = cfg.title + " — T.C. UAB Denizcilik Verileri";
+  document.title = cfg.title + " — T.C. UAB Denizcilik İstatistikleri";
 
   const m = H[cfg.headKey];
-  const hv = U.human(m.deger);
-  const hasYoy = typeof m.yoy === "number";
-  const up = m.yoy >= 0;
-  const deltaHTML = hasYoy ? `<div class="delta ${up ? "up" : "down"}">${up ? arrow("up") : arrow("down")} %${Math.abs(m.yoy).toString().replace(".", ",")}</div>` : "";
-  const subHTML = m.onceki ? `${m.yil} · ${m.yil - 1}'e göre ${up ? "artış" : "azalış"}` : (m.not ? m.not : `${m.yil} verisi`);
+  const accent = getComputedStyle(document.documentElement).getPropertyValue(cfg.accent).trim();
+  const trendYears = cfg.trend ? Object.keys(cfg.trend).sort() : [];
+  const SEAS = ["Marmara", "Ege", "Akdeniz", "Karadeniz"];
 
-  // Destekleyici istatistik kartları
-  let supportCards = "";
-  if (m.onceki) {
-    const ph = U.human(m.onceki);
-    supportCards += statMini(`${m.yil - 1} yılı`, ph.v + " " + ph.u, cfg.unit, "Önceki yıl değeri");
-  }
-  if (cat === "gemi") {
-    const gt = U.human(902445227); supportCards += statMini("Toplam büyüklük", gt.v + " " + gt.u, "gros ton", "Uğrayan gemilerin toplam hacmi");
-  }
-  if (cat === "kabotaj") {
-    const ar = U.human(T.kabotaj_arac["2024"]); supportCards += statMini("Taşınan araç", ar.v + " " + ar.u, "araç", "Kabotajda 2024 araç sayısı");
-  }
-  if (cfg.portField) {
-    const top = [...P].filter((p) => p[cfg.portField]).sort((a, b) => b[cfg.portField] - a[cfg.portField])[0];
-    const tv = U.human(top[cfg.portField]);
-    supportCards += statMini("En büyük liman", top.name, `${tv.v} ${tv.u} ${cfg.unit}`, "Bu kategoride lider liman");
-  }
+  // Filtre durumu
+  const state = { year: m.yil, region: "all" };
 
-  function statMini(k, v, u, sub) {
-    return `<div class="stat-card reveal"><div class="lbl">${k}</div>
-      <div class="num" style="font-size:1.9rem">${v} <span class="unit">${u}</span></div>
-      <div class="sub">${sub}</div></div>`;
-  }
-
-  // Grafik bölümü
-  let charts = "";
-  if (cfg.trend) charts += `<div class="chart-card wide reveal"><h3>Yıllara göre gelişim</h3><div class="csub">${cfg.trendName} (${cfg.trendUnit})</div><div class="chart-holder" id="catTrend"></div></div>`;
-  if (cfg.portField) charts += `<div class="chart-card wide reveal"><h3>Limanlara göre dağılım</h3><div class="csub">2024 · en büyük 10 liman</div><div class="chart-holder" id="catPorts"></div></div>`;
-  if (cat === "kabotaj") charts += `<div class="chart-card wide reveal"><h3>Taşınan araç — yıllara göre</h3><div class="csub">Kabotaj hatlarında taşınan araç sayısı</div><div class="chart-holder" id="catTrend2"></div></div>`;
-
+  /* ---------- İskelet ---------- */
   host.innerHTML = `
-    <section class="page-hero">
-      <div class="wrap">
-        <div class="breadcrumb reveal"><a href="index.html">Anasayfa</a> ${arrow("right")} <span>${cfg.title}</span></div>
-        <div class="page-title reveal">
-          <span class="page-icon" style="color:${cfg.accent}">${icon(cfg.ic)}</span>
-          <h1>${cfg.title}</h1>
-        </div>
-        <p class="intro reveal d1">${cfg.intro}</p>
+    <section class="page-hero"><div class="wrap">
+      <div class="breadcrumb"><a href="index.html">Anasayfa</a> ${arrow("right")} <span>${cfg.title}</span></div>
+      <div class="page-title">
+        <span class="page-icon" style="color:${accent}">${icon(cfg.ic)}</span>
+        <h1>${cfg.title}</h1>
       </div>
-    </section>
+      <p class="intro">${cfg.intro}</p>
+    </div></section>
 
-    <section class="section" style="padding-top:20px">
-      <div class="wrap">
-        <div class="summary-grid" style="grid-template-columns:1.4fr 1fr 1fr 1fr">
-          <div class="stat-card reveal" style="border-color:var(--border-strong)">
-            <div class="lbl"><span class="ic" style="color:${cfg.accent}">${icon(cfg.ic)}</span>${cfg.title.replace(" İstatistikleri", "")}</div>
-            ${deltaHTML}
-            <div class="num" style="font-size:3.2rem">${hv.v} <span class="unit">${hv.u} ${cfg.unit}</span></div>
-            <div class="sub">${subHTML}</div>
-          </div>
-          ${supportCards}
-        </div>
-        <div class="insight reveal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/><path d="M9 21h6"/></svg>
-          <div><b>Bu veri ne anlatıyor?</b> ${cfg.insight}</div>
-        </div>
+    <section class="cat-wrap"><div class="wrap">
+      <div class="cat-layout">
+        <aside class="cat-filters" id="catFilters"></aside>
+        <div class="cat-dash" id="catDash"></div>
       </div>
-    </section>
 
-    ${charts ? `<section class="section" style="padding-top:0">
-      <div class="wrap"><div class="chart-grid">${charts}</div></div>
-    </section>` : ""}
+      <div class="cat-archive" id="catArchive"></div>
+    </div></section>`;
 
-    <section class="section" style="padding-top:0">
-      <div class="wrap">
-        <div class="chart-card reveal" style="display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap">
-          <div>
-            <h3 style="justify-content:flex-start">Resmi kaynak dosyaları</h3>
-            <p class="csub" style="max-width:52ch">Aylara, limanlara ve türlere göre ayrıntılı istatistik dosyalarının tamamına Denizcilik Genel Müdürlüğü'nün resmi arşivinden ulaşabilirsiniz.</p>
-          </div>
-          <a class="btn btn-primary" href="${GOV}${cfg.source}" target="_blank" rel="noopener">Resmi dosyaları aç
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg></a>
-        </div>
-      </div>
-    </section>`;
+  /* ---------- Filtre paneli ---------- */
+  function renderFilters() {
+    const box = document.getElementById("catFilters");
+    let html = `<div class="filter-head">${icon(cfg.ic)} <span>Filtrele</span></div>`;
 
-  // Grafikleri çiz
-  setTimeout(() => {
-    if (cfg.trend) {
-      const ys = Object.keys(cfg.trend).sort();
-      C.lineArea(document.getElementById("catTrend"), { labels: ys, unit: cfg.trendUnit, series: [{ name: cfg.trendName, color: cfg.accent, values: ys.map((y) => cfg.trend[y]) }] });
+    if (trendYears.length) {
+      html += `<div class="filter-group"><label>Yıl</label><div class="filter-years">` +
+        trendYears.slice().reverse().map((y) =>
+          `<button data-year="${y}" class="${+y === state.year ? "on" : ""}">${y}</button>`).join("") +
+        `</div></div>`;
     }
     if (cfg.portField) {
-      const top = [...P].filter((p) => p[cfg.portField]).sort((a, b) => b[cfg.portField] - a[cfg.portField]).slice(0, 10);
-      C.bars(document.getElementById("catPorts"), { unit: cfg.unit, items: top.map((p) => ({ label: p.name, value: p[cfg.portField], color: cfg.accent })) });
+      html += `<div class="filter-group"><label>Deniz bölgesi</label><div class="filter-regions">` +
+        `<button data-region="all" class="${state.region === "all" ? "on" : ""}">Tümü</button>` +
+        SEAS.map((s) => `<button data-region="${s}" class="${state.region === s ? "on" : ""}">${s}</button>`).join("") +
+        `</div></div>`;
+      html += `<div class="filter-note">Liman kırılımı en güncel yıla (${m.yil}) aittir.</div>`;
     }
-    if (cat === "kabotaj") {
-      const ys = Object.keys(T.kabotaj_arac).filter((y) => +y >= 2010).sort();
-      C.lineArea(document.getElementById("catTrend2"), { labels: ys, unit: "araç", series: [{ name: "Taşınan araç", color: "var(--c-roro)", values: ys.map((y) => T.kabotaj_arac[y]) }] });
+    if (!trendYears.length && !cfg.portField) {
+      html += `<div class="filter-note">Bu kategori için ${m.yil} yılı özet verisi gösterilmektedir. Tüm yılların ayrıntılı dosyaları aşağıdaki arşivdedir.</div>`;
     }
-    window.MDScan && window.MDScan();
-  }, 60);
+
+    html += `<a class="btn btn-ghost filter-src" href="${GOV}/${A[cfg.arch] ? A[cfg.arch].slug : ""}" target="_blank" rel="noopener">
+      Resmi kaynak sayfası <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg></a>`;
+    box.innerHTML = html;
+
+    box.querySelectorAll("[data-year]").forEach((b) =>
+      b.addEventListener("click", () => { state.year = +b.dataset.year; renderFilters(); renderDash(); }));
+    box.querySelectorAll("[data-region]").forEach((b) =>
+      b.addEventListener("click", () => { state.region = b.dataset.region; renderFilters(); renderDash(); }));
+  }
+
+  /* ---------- Sağ dashboard ---------- */
+  function renderDash() {
+    const box = document.getElementById("catDash");
+    const isLatest = state.year === m.yil;
+    const val = cfg.trend ? cfg.trend[state.year] : m.deger;
+    const hv = U.human(val);
+    const hasYoy = isLatest && typeof m.yoy === "number";
+    const up = m.yoy >= 0;
+
+    // Kart: seçili yıl değeri
+    let head = `<div class="dash-stat" style="--kc:${accent}">
+      <div class="ds-top"><span class="ds-ic">${icon(cfg.ic)}</span>
+        <span class="ds-label">${cfg.trendName}</span>
+        ${hasYoy ? `<span class="kpi-delta ${up ? "up" : "down"}">${up ? arrow("up") : arrow("down")} %${Math.abs(m.yoy).toString().replace(".", ",")}</span>`
+          : `<span class="kpi-year">${state.year}</span>`}
+      </div>
+      <div class="ds-num">${hv.v} <span class="ds-unit">${hv.u} ${cfg.unit}</span></div>
+      <div class="ds-sub">${state.year} yılı${hasYoy ? ` · ${m.yil - 1}'e göre ${up ? "artış" : "azalış"}` : ""}${m.not ? " · " + m.not : ""}</div>
+    </div>`;
+
+    // Grafik kutuları
+    let cards = "";
+    if (cfg.trend) cards += `<div class="dash-card"><h3>Yıllara göre gelişim</h3><p class="csub">${cfg.trendName} (${cfg.trendUnit})</p><div class="chart-holder" id="dTrend"></div></div>`;
+    if (cfg.portField) {
+      cards += `<div class="dash-card"><h3>Limanlara göre dağılım${state.region !== "all" ? " — " + state.region : ""}</h3><p class="csub">${m.yil} · seçili bölgedeki limanlar</p><div class="chart-holder" id="dPorts"></div></div>`;
+      cards += `<div class="dash-card"><h3>Harita üzerinde</h3><p class="csub">Balon büyüklüğü limanın hacmini gösterir</p><div class="chart-holder mapviz" id="dMap"></div></div>`;
+    }
+
+    box.innerHTML = head +
+      `<div class="insight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/><path d="M9 21h6"/></svg><div><b>Bu veri ne anlatıyor?</b> ${cfg.insight}</div></div>` +
+      `<div class="dash-cards">${cards}</div>`;
+
+    setTimeout(() => {
+      if (cfg.trend) {
+        const ys = Object.keys(cfg.trend).sort();
+        C.lineArea(document.getElementById("dTrend"), { labels: ys, unit: cfg.trendUnit,
+          series: [{ name: cfg.trendName, color: accent, values: ys.map((y) => cfg.trend[y]) }] });
+      }
+      if (cfg.portField) {
+        let ports = P.filter((p) => p[cfg.portField] > 0);
+        if (state.region !== "all") ports = ports.filter((p) => p.sea === state.region);
+        const top = [...ports].sort((a, b) => b[cfg.portField] - a[cfg.portField]).slice(0, 10);
+        C.bars(document.getElementById("dPorts"), { unit: cfg.unit, items: top.map((p) => ({ label: p.name, value: p[cfg.portField], color: accent })) });
+        drawMap(document.getElementById("dMap"), ports);
+      }
+    }, 50);
+  }
+
+  function drawMap(hostEl, ports) {
+    const max = Math.max(...ports.map((p) => p[cfg.portField]));
+    const R = (v) => 5 + 30 * Math.sqrt(v / max);
+    const fill = accent + "44", stroke = accent;
+    hostEl.innerHTML = `<svg class="bigmap" viewBox="${D.map.viewBox}" preserveAspectRatio="xMidYMid meet">
+      ${D.map.outline.map((d) => `<path class="land" d="${d}"></path>`).join("")}
+      ${[...ports].sort((a, b) => b[cfg.portField] - a[cfg.portField]).map((p) =>
+        `<circle class="bubble" cx="${p.mx}" cy="${p.my}" r="${R(p[cfg.portField])}" style="fill:${fill};stroke:${stroke}"><title>${p.name}: ${nf(p[cfg.portField])} ${cfg.unit}</title></circle>`).join("")}
+    </svg>`;
+  }
+
+  /* ---------- Alt: Excel arşivi ---------- */
+  function renderArchive() {
+    const box = document.getElementById("catArchive");
+    const a = A[cfg.arch];
+    if (!a) { box.innerHTML = ""; return; }
+    const years = Object.keys(a.yillar).sort((x, y) => {
+      const nx = parseInt(x, 10), ny = parseInt(y, 10);
+      if (isNaN(nx)) return 1; if (isNaN(ny)) return -1; return ny - nx;
+    });
+    const total = years.reduce((s, y) => s + a.yillar[y].length, 0);
+    const fileIcon = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 3v5h5M7 3h8l5 5v11a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/></svg>';
+    box.innerHTML = `
+      <div class="section-head" style="margin-bottom:22px">
+        <span class="eyebrow">Resmi dosyalar</span>
+        <h2>${cfg.title.replace(" İstatistikleri", "")} — istatistik dosyaları</h2>
+        <p>Aylara, limanlara ve türlere göre ayrıntılı ${total.toLocaleString("tr-TR")} resmi dosya. Yıl başlığına tıklayarak açın.</p>
+      </div>
+      ${years.map((y, i) => `<details class="arch-year" ${i < 2 ? "open" : ""}>
+        <summary><span class="yr">${y}</span><span class="cnt">${a.yillar[y].length} dosya</span>
+          <svg class="chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <ul class="arch-files">${a.yillar[y].map((f) =>
+          `<li><a href="${f.url}" target="_blank" rel="noopener">${fileIcon}<span>${f.ad}</span><em>XLS</em></a></li>`).join("")}</ul>
+      </details>`).join("")}`;
+  }
+
+  renderFilters();
+  renderDash();
+  renderArchive();
+  window.MDScan && window.MDScan();
 })();

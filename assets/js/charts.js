@@ -171,5 +171,28 @@
     host.appendChild(svg);
   }
 
-  window.MDCharts = { lineArea, bars, donut };
+  /* ---------- Sparkline (mini trend, eksensiz) ---------- */
+  function spark(host, values, color) {
+    host.innerHTML = "";
+    if (!values || values.length < 2) return;
+    const W = 220, Hh = 56, pad = 4;
+    const svg = el("svg", { viewBox: `0 0 ${W} ${Hh}`, preserveAspectRatio: "none", style: "width:100%;height:56px;overflow:visible" });
+    const min = Math.min(...values), max = Math.max(...values);
+    const X = (i) => pad + ((W - 2 * pad) * i) / (values.length - 1);
+    const Y = (v) => Hh - pad - ((Hh - 2 * pad) * (v - min)) / (max - min || 1);
+    const pts = values.map((v, i) => [X(i), Y(v)]);
+    const d = smooth(pts);
+    const gid = "spk" + Math.random().toString(36).slice(2, 7);
+    const grad = el("linearGradient", { id: gid, x1: 0, y1: 0, x2: 0, y2: 1 });
+    grad.appendChild(el("stop", { offset: "0%", "stop-color": color, "stop-opacity": 0.28 }));
+    grad.appendChild(el("stop", { offset: "100%", "stop-color": color, "stop-opacity": 0 }));
+    svg.appendChild(grad);
+    svg.appendChild(el("path", { d: `${d}L${X(values.length - 1)},${Hh} L${X(0)},${Hh} Z`, fill: `url(#${gid})` }));
+    const line = el("path", { d, fill: "none", stroke: color, "stroke-width": 2.4, "stroke-linecap": "round", "vector-effect": "non-scaling-stroke" });
+    svg.appendChild(line);
+    svg.appendChild(el("circle", { cx: X(values.length - 1), cy: Y(values[values.length - 1]), r: 3.2, fill: color }));
+    host.appendChild(svg);
+  }
+
+  window.MDCharts = { lineArea, bars, donut, spark };
 })();

@@ -9,7 +9,7 @@
   const NAV = [
     { href: "yuk.html", label: "Yük" },
     { href: "konteyner.html", label: "Konteyner" },
-    { href: "bogazlar.html", label: "Türk Boğazları Gemi Geçiş" },
+    { href: "bogazlar.html", label: "Türk Boğazları" },
     { href: "kabotaj.html", label: "Kabotaj Hattı" },
     { href: "kruvaziyer.html", label: "Kruvaziyer" },
     { href: "roro.html", label: "RO-RO Araç" },
@@ -36,15 +36,15 @@
         <span class="brand-divider"></span>
         <span class="brand-sub">Denizcilik<br><b>İstatistikleri</b></span>
       </a>
+      <nav class="primary-nav" aria-label="Ana menü">
+        <ul class="mainmenu">
+          ${NAV.map((n) => `<li><a href="${n.href}">${n.label}</a></li>`).join("")}
+        </ul>
+      </nav>
       <button class="menu-toggle icon-btn" aria-label="Menü">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
       </button>
     </div>
-    <nav class="catbar"><div class="wrap">
-      <ul class="mainmenu">
-        ${NAV.map((n) => `<li><a href="${n.href}">${n.label}</a></li>`).join("")}
-      </ul>
-    </div></nav>
   </header>`;
 
   const footer = `

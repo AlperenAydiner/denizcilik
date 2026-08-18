@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Türkiye'nin Denizcilik Verileri — T.C. UAB Denizcilik Genel Müdürlüğü</title>
-<meta name="description" content="Türkiye'nin deniz ticareti, limanları, gemileri ve yolcularına ait resmi istatistikler — vatandaş dostu, görsel ve etkileşimli veri platformu.">
+<meta name="description" content="Türkiye'nin deniz ticareti, limanları, gemileri ve yolcularına ait resmi istatistiklerin özet panosu.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,600;1,700&display=swap" rel="stylesheet">
@@ -15,131 +15,26 @@
 <div id="site-header"></div>
 
 <main>
-  <!-- HERO -->
-  <section class="hero">
+  <section class="dash">
     <div class="wrap">
-      <div class="hero-copy">
-        <span class="eyebrow reveal">Resmi Denizcilik İstatistikleri Platformu</span>
-        <h1 class="reveal d1">Türkiye'nin <span class="grad">Denizcilik Verileri</span></h1>
-        <p class="lead reveal d2">Denizlerimizde ne kadar yük taşındı? Kaç konteyner elleçlendi? Limanlarımız ne kadar büyüdü? Türkiye'nin deniz ticareti nereye gidiyor?</p>
-        <ul class="questions reveal d3">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Rakamları istatistik uzmanı olmadan anlayın</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Limanlardan boğazlara, gemilerden yolculara tek platform</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> İsterseniz detaya inin, profesyonel verileri inceleyin</li>
-        </ul>
-        <div class="cta reveal d4">
-          <a class="btn btn-primary" href="#ozet">Verilere göz at
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a>
-          <a class="btn btn-ghost" href="#yolculuk">Gemiyle yolculuğa çık</a>
+      <div class="dash-head reveal">
+        <div>
+          <span class="eyebrow">Resmi Denizcilik İstatistikleri Panosu</span>
+          <h1>Türkiye'nin Denizcilik Verileri</h1>
+          <p class="dash-lead">Türkiye'nin deniz ticareti tek bakışta. En güncel yıla ait çarpıcı rakamlar ve geçen yıla göre değişim — istatistik uzmanı olmadan.</p>
         </div>
-        <div class="source-note reveal d4">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
-          Kaynak: T.C. Ulaştırma ve Altyapı Bakanlığı — Denizcilik Genel Müdürlüğü resmi istatistikleri
+        <div class="dash-meta">
+          <div class="dash-year">2024</div>
+          <div class="dash-year-cap">güncel veri yılı</div>
         </div>
       </div>
-      <div class="hero-ship reveal d2">
-        <div class="sea" aria-hidden="true"></div>
-        <div class="ripple" aria-hidden="true"></div>
-        <div class="ripple r2" aria-hidden="true"></div>
-        <div class="ripple r3" aria-hidden="true"></div>
-        <div class="deck"><img src="assets/img/ship-3d.svg" alt="Konteyner gemisi" width="820" height="765"></div>
-        <div class="tagline"><span class="dot"></span>Bir konteyner gemisi ortalama <b>13.000 TEU</b> taşır</div>
-      </div>
-    </div>
-  </section>
 
-  <!-- BÜYÜK İSTATİSTİK ŞERİDİ -->
-  <section class="wrap" style="margin-top:10px">
-    <div class="bigstats" id="bigStats"></div>
-  </section>
+      <div class="kpi-grid" id="kpiGrid"></div>
 
-  <!-- ÖZET (YoY) -->
-  <section class="section" id="ozet">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="eyebrow">Bugün Türkiye'nin denizlerinde ne oluyor?</span>
-        <h2>Türkiye'nin Denizcilik Özeti</h2>
-        <p>Bu yılın rakamları ve bir önceki yıla göre değişim. Yaşayan bir veri platformu — arşiv değil, güncel bir fotoğraf.</p>
+      <div class="dash-foot reveal">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        <span>Kaynak: T.C. Ulaştırma ve Altyapı Bakanlığı — Denizcilik Genel Müdürlüğü resmi istatistikleri. Bir kartın üzerine tıklayarak o kategorinin ayrıntılı verilerine ulaşabilirsiniz.</span>
       </div>
-      <div class="summary-grid" id="summaryGrid"></div>
-      <div class="insight reveal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/><path d="M9 21h6"/></svg>
-        <div><b>Bu veri ne anlatıyor?</b> Konteyner trafiğindeki artış, Türkiye üzerinden geçen dünya ticaretinin büyüdüğünü gösterir. Kruvaziyer yolcusundaki sıçrama ise deniz turizminin toparlandığına işaret eder.</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- GEMİ YOLCULUĞU -->
-  <section class="section voyage" id="yolculuk">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="eyebrow">Kıyıdan kıyıya bir yolculuk</span>
-        <h2>Gemiyle Türkiye kıyılarında</h2>
-        <p>Aşağı kaydırın: Bir gemi İstanbul'dan başlayıp Türkiye'nin dört bir yanındaki limanları dolaşırken, her durakta o bölgenin denizcilik hikâyesini anlatalım.</p>
-      </div>
-      <div class="layout">
-        <div class="story" id="voyageStory"></div>
-        <div class="stage" id="voyageStage"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- İNTERAKTİF HARİTA -->
-  <section class="section mapviz">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="eyebrow">Limanlar haritası</span>
-        <h2>Yük ve konteyner nerede yoğunlaşıyor?</h2>
-        <p>Her balonun büyüklüğü o limanın hacmini gösterir. Bir limanın üzerine gelin — rakamları görün. Yük ile konteyner arasında geçiş yapabilirsiniz.</p>
-      </div>
-      <div class="reveal" id="bigMap"></div>
-      <div class="insight reveal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/><path d="M9 21h6"/></svg>
-        <div><b>Bu harita ne anlatıyor?</b> Marmara ve Ege'deki büyük limanlar (Kocaeli, Aliağa, Ambarlı), Türkiye'nin dış ticaretinin ağırlıklı olarak bu bölgelerden aktığını gösterir.</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TIMELINE -->
-  <section class="section timeline-wrap">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="eyebrow">Yıllara göre değişim</span>
-        <h2>Türkiye'nin deniz ticareti nasıl değişti?</h2>
-        <p>Bir yıl seçin, o yılın rakamlarını görün. Türkiye'nin denizcilik hacmi son on yılda istikrarlı biçimde büyüdü.</p>
-      </div>
-      <div class="reveal" id="timeline"></div>
-    </div>
-  </section>
-
-  <!-- GRAFİKLER -->
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="eyebrow">Rakamların hikâyesi</span>
-        <h2>Limanlar, konteynerler ve yolcular</h2>
-      </div>
-      <div class="chart-grid" id="homeCharts">
-        <div class="chart-card reveal"><h3>En büyük yük limanları</h3><div class="csub">2024 · limanlarda elleçlenen toplam yük (ton)</div><div class="chart-holder" id="barYuk"></div></div>
-        <div class="chart-card reveal d1"><h3>Konteynerde ilk limanlar</h3><div class="csub">2024 · TEU payı</div><div class="chart-holder" id="donutKon" style="display:grid;place-items:center"></div></div>
-        <div class="chart-card wide reveal"><h3>Kabotajda yolcu trafiği</h3><div class="csub">Türkiye'nin kendi kıyıları arasında taşınan yolcu sayısı, yıllara göre</div><div class="chart-holder" id="lineKab"></div></div>
-      </div>
-      <div class="insight reveal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/><path d="M9 21h6"/></svg>
-        <div><b>Bu grafikler ne anlatıyor?</b> Kabotaj yolcusu, çoğu şehir hattı vapurları ve feribotlarla taşınan milyonlarca insanı kapsar — yani bu rakam, deniz ulaşımının günlük hayattaki yerini gösterir.</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- KATEGORİLER -->
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="eyebrow">Tüm veri kategorileri</span>
-        <h2>Detaya inmek isteyenler için</h2>
-        <p>Her kategori kendi sayfasında; grafikler, liman kırılımları ve resmi kaynak dosyalarıyla birlikte.</p>
-      </div>
-      <div class="cat-grid" id="catGrid"></div>
     </div>
   </section>
 </main>
