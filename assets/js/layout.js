@@ -82,15 +82,15 @@
         <div class="footer-info">
           <div class="fi-item">
             <span class="fi-ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21s7-5.5 7-11a7 7 0 10-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
-            <span class="fi-tx"><b data-i18n="contact.address">${t("contact.address")}</b>Hakkı Turayliç Cad. No:5<br>06338 Emek / Ankara</span>
+            <span class="fi-tx"><b data-i18n="contact.address">${t("contact.address")}</b><span data-i18n="contact.addressValue">${t("contact.addressValue")}</span></span>
           </div>
           <div class="fi-item">
             <span class="fi-ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .3 1.9.6 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.1a2 2 0 012.1-.5c.9.3 1.8.5 2.8.6a2 2 0 011.7 2z"/></svg></span>
-            <span class="fi-tx"><b data-i18n="contact.phone">${t("contact.phone")}</b><a href="tel:03122031000">0312 203 10 00</a></span>
+            <span class="fi-tx"><b data-i18n="contact.phone">${t("contact.phone")}</b><a href="tel:03122031000" data-i18n="contact.phoneValue">${t("contact.phoneValue")}</a></span>
           </div>
           <div class="fi-item">
             <span class="fi-ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 12a8 8 0 1116 0v5a2 2 0 01-2 2h-2v-6h4M4 13h4v6H6a2 2 0 01-2-2z"/></svg></span>
-            <span class="fi-tx"><b data-i18n="contact.callcenter">${t("contact.callcenter")}</b><a href="https://www.uab.gov.tr/cagri-merkezi" target="_blank" rel="noopener">ALO 123</a></span>
+            <span class="fi-tx"><b data-i18n="contact.callcenter">${t("contact.callcenter")}</b><a href="https://www.uab.gov.tr/cagri-merkezi" target="_blank" rel="noopener" data-i18n="contact.callcenterValue">${t("contact.callcenterValue")}</a></span>
           </div>
         </div>
 

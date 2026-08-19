@@ -11,10 +11,15 @@
   const $ = (id) => document.getElementById(id);
   const nf = new Intl.NumberFormat("tr-TR");
 
+  // Normalde giriş sonrası doğrudan sitede düzenlemeye gidilir; bu tablo görünümü
+  // yalnız admin.html?gelismis=1 ile açılır (detay veri / liman / trend düzenleme).
+  const SHOW_TABLES = new URLSearchParams(location.search).has("gelismis");
+
   /* ---------- Giriş / oturum ---------- */
   async function refreshSession() {
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
+      if (!SHOW_TABLES) { location.replace("index.html?edit=1"); return; }
       $("loginBox").hidden = true;
       $("adminBox").hidden = false;
       $("whoAmI").innerHTML = `${session.user.email} <button type="button" id="pwBtn" class="admin-linklike">şifre belirle/değiştir</button>`;

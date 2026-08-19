@@ -61,6 +61,16 @@
 
       "contact.title": "İletişim", "contact.address": "Adres", "contact.phone": "Santral",
       "contact.callcenter": "Çağrı Merkezi", "contact.web": "Web",
+      "contact.lead": "Denizcilik istatistikleriyle ilgili soru, görüş ve talepleriniz için Denizcilik Genel Müdürlüğü ile iletişime geçebilirsiniz.",
+      "contact.dept": "Denizcilik Genel Müdürlüğü",
+      "contact.addressValue": "Hakkı Turayliç Cad. No:5, 06338 Emek / Ankara",
+      "contact.phoneValue": "0312 203 10 00",
+      "contact.fax": "Faks", "contact.faxValue": "0312 232 42 24",
+      "contact.webValue": "denizcilik.uab.gov.tr", "contact.callcenterValue": "ALO 123",
+      "contact.formTitle": "Mesaj gönderin",
+      "contact.formNote": "Formu doldurduğunuzda varsayılan e-posta uygulamanız açılır.",
+      "contact.formName": "Ad Soyad", "contact.formEmail": "E-posta",
+      "contact.formMsg": "Mesajınız", "contact.formSend": "Gönder",
 
       "footer.stats": "İstatistikler", "footer.corp": "Kurumsal",
       "footer.note": "Bu sayfa bir arayüz tasarım çalışmasıdır. Resmi yayın:",
@@ -126,6 +136,16 @@
 
       "contact.title": "Contact", "contact.address": "Address", "contact.phone": "Switchboard",
       "contact.callcenter": "Call Centre", "contact.web": "Web",
+      "contact.lead": "For questions, feedback and requests regarding maritime statistics, you can contact the Directorate General of Maritime Affairs.",
+      "contact.dept": "Directorate General of Maritime Affairs",
+      "contact.addressValue": "Hakkı Turayliç Cad. No:5, 06338 Emek / Ankara",
+      "contact.phoneValue": "0312 203 10 00",
+      "contact.fax": "Fax", "contact.faxValue": "0312 232 42 24",
+      "contact.webValue": "denizcilik.uab.gov.tr", "contact.callcenterValue": "ALO 123",
+      "contact.formTitle": "Send a message",
+      "contact.formNote": "When you submit the form, your default email application opens.",
+      "contact.formName": "Full name", "contact.formEmail": "Email",
+      "contact.formMsg": "Your message", "contact.formSend": "Send",
 
       "footer.stats": "Statistics", "footer.corp": "Corporate",
       "footer.note": "This page is an interface design study. Official publication:",
@@ -208,6 +228,9 @@
       apply();
       console.info("[i18n] İçerik Supabase'den yüklendi (" + rows.length + " metin).");
     } catch (e) {
+      // Yedeğe düşsek de apply() şart: HTML'deki sabit metinler Türkçe yazılı,
+      // dil EN ise gömülü sözlükle yeniden boyanmaları gerekiyor.
+      apply();
       console.warn("[i18n] İçerik Supabase'den yüklenemedi, gömülü metinler kullanılıyor:", e.message);
     }
   })();

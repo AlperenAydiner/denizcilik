@@ -19,6 +19,12 @@
 }
 .field select:focus { outline: none; border-color: var(--accent); }
 
+.admin-back {
+  display: inline-flex; align-items: center; gap: 7px; margin-bottom: 16px;
+  font-size: 0.86rem; font-weight: 600; color: var(--accent); transition: gap .2s;
+}
+.admin-back:hover { gap: 11px; }
+
 .admin-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .admin-topbar span { color: var(--text-soft); font-size: 0.92rem; }
 .admin-linklike { background: none; border: none; color: var(--accent); font-size: 0.8rem; margin-left: 8px; text-decoration: underline; }

@@ -108,3 +108,22 @@ insert into content (key, tr, en) values
 ('footer.affiliates', 'Bağlı kuruluşlar', 'Affiliated institutions'),
 ('footer.dgm', 'Denizcilik Genel Müdürlüğü', 'Directorate General of Maritime Affairs'),
 ('footer.kvkk', 'KVKK Dokümanları', 'Data Protection Documents');
+
+-- İletişim sayfası (sonradan eklendi): sabit HTML metinleriydi, artık panelden düzenlenebilir.
+-- Yeniden çalıştırılabilir olsun diye on conflict korumalı.
+insert into content (key, tr, en) values
+('contact.lead', 'Denizcilik istatistikleriyle ilgili soru, görüş ve talepleriniz için Denizcilik Genel Müdürlüğü ile iletişime geçebilirsiniz.', 'For questions, feedback and requests regarding maritime statistics, you can contact the Directorate General of Maritime Affairs.'),
+('contact.dept', 'Denizcilik Genel Müdürlüğü', 'Directorate General of Maritime Affairs'),
+('contact.addressValue', 'Hakkı Turayliç Cad. No:5, 06338 Emek / Ankara', 'Hakkı Turayliç Cad. No:5, 06338 Emek / Ankara'),
+('contact.phoneValue', '0312 203 10 00', '0312 203 10 00'),
+('contact.fax', 'Faks', 'Fax'),
+('contact.faxValue', '0312 232 42 24', '0312 232 42 24'),
+('contact.webValue', 'denizcilik.uab.gov.tr', 'denizcilik.uab.gov.tr'),
+('contact.callcenterValue', 'ALO 123', 'ALO 123'),
+('contact.formTitle', 'Mesaj gönderin', 'Send a message'),
+('contact.formNote', 'Formu doldurduğunuzda varsayılan e-posta uygulamanız açılır.', 'When you submit the form, your default email application opens.'),
+('contact.formName', 'Ad Soyad', 'Full name'),
+('contact.formEmail', 'E-posta', 'Email'),
+('contact.formMsg', 'Mesajınız', 'Your message'),
+('contact.formSend', 'Gönder', 'Send')
+on conflict (key) do nothing;

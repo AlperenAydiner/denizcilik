@@ -72,6 +72,12 @@
   function start() {
     H = window.MARITIME_DATA.headline;
     T = window.MARITIME_DATA.trend;
+    // Veri yılı metriklerden gelsin — elle yazılan yıl veri ilerleyince eskiyordu
+    const ye = document.getElementById("dashYear");
+    if (ye) {
+      const yrs = Object.values(H).map((x) => x && x.yil).filter(Boolean);
+      if (yrs.length) ye.textContent = Math.max.apply(null, yrs);
+    }
     render();
     window.MDObserve && window.MDObserve();
   }
