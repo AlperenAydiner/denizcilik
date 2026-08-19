@@ -35,18 +35,7 @@
       <div class="field"><label>Şifre</label><input type="password" id="loginPass" autocomplete="current-password"></div>
       <button class="btn btn-primary" id="loginBtn" type="button" style="width:100%;justify-content:center">Giriş yap</button>
       <p id="loginMsg" class="admin-msg"></p>
-
-      <div class="admin-otp-divider">veya</div>
-
-      <div id="otpStep1">
-        <p class="admin-hint" style="margin-bottom:10px">Şifre belirlemediysen, e-postana tek seferlik 6 haneli kod gönderelim.</p>
-        <button class="btn btn-ghost" id="otpSendBtn" type="button" style="width:100%;justify-content:center">Kodu e-postama gönder</button>
-      </div>
-      <div id="otpStep2" hidden>
-        <div class="field"><label>E-postana gelen 6 haneli kod</label><input type="text" id="otpCode" inputmode="numeric" maxlength="6" placeholder="000000"></div>
-        <button class="btn btn-primary" id="otpVerifyBtn" type="button" style="width:100%;justify-content:center">Kodu doğrula ve gir</button>
-      </div>
-      <p id="otpMsg" class="admin-msg"></p>
+      <p class="admin-hint" style="margin-top:14px">Şifreni unuttuysan Supabase panelinden "parola sıfırlama e-postası" gönderilebilir.</p>
     </div>
 
     <!-- Panel (girişten sonra görünür) -->
@@ -57,13 +46,15 @@
       </div>
 
       <div class="admin-tabs">
-        <button type="button" class="on" data-tab="metrics">Metrikler</button>
+        <button type="button" class="on" data-tab="content">Site Metinleri</button>
+        <button type="button" data-tab="metrics">Metrikler</button>
         <button type="button" data-tab="ports">Limanlar</button>
         <button type="button" data-tab="trends">Trendler</button>
         <button type="button" data-tab="detail">Detay Veri</button>
       </div>
 
-      <div class="admin-panel" id="tab-metrics"></div>
+      <div class="admin-panel" id="tab-content"></div>
+      <div class="admin-panel" id="tab-metrics" hidden></div>
       <div class="admin-panel" id="tab-ports" hidden></div>
       <div class="admin-panel" id="tab-trends" hidden></div>
       <div class="admin-panel" id="tab-detail" hidden></div>

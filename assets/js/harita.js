@@ -88,5 +88,5 @@
   window.MDScan && window.MDScan();
   }
 
-  (window.MD_READY || Promise.resolve()).then(start);
+  Promise.all([window.MD_READY || Promise.resolve(), window.MD_I18N_READY || Promise.resolve()]).then(start);
 })();

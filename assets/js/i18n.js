@@ -178,4 +178,30 @@
   window.t = t;
 
   document.documentElement.lang = lang;
+
+  /* ---------- İçerik override: admin panelden düzenlenen metinler ----------
+     Supabase 'content' tablosundaki değerler DICT'in üzerine yazılır. Sayfa
+     script'leri window.MD_I18N_READY'yi bekleyip sonra t()/render çağırmalı
+     (aksi halde ilk boyama hardcoded metinle olur — kabul edilebilir, apply()
+     ile [data-i18n] işaretli elemanlar zaten yeniden boyanır). */
+  window.MD_I18N_READY = (async () => {
+    try {
+      const URL = "https://mczowhdwwdidchtgeioo.supabase.co";
+      const KEY = "sb_publishable_0GoNDg3SAFC7dK1AOc2SsA_u7bN8Bc2";
+      const r = await fetch(URL + "/rest/v1/content?select=key,tr,en", {
+        headers: { apikey: KEY, Authorization: "Bearer " + KEY },
+      });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const rows = await r.json();
+      if (!Array.isArray(rows) || !rows.length) throw new Error("boş content");
+      rows.forEach((row) => {
+        if (row.tr) DICT.tr[row.key] = row.tr;
+        if (row.en) DICT.en[row.key] = row.en;
+      });
+      apply();
+      console.info("[i18n] İçerik Supabase'den yüklendi (" + rows.length + " metin).");
+    } catch (e) {
+      console.warn("[i18n] İçerik Supabase'den yüklenemedi, gömülü metinler kullanılıyor:", e.message);
+    }
+  })();
 })();

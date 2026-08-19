@@ -2,11 +2,12 @@
    files.js — Dosyalar sayfası: kategori sekmeleri, yıl grupları, arama
    URL ile derin bağlantı: dosyalar.html?kat=yuk
    ============================================================ */
-(function () {
+(async function () {
   "use strict";
   const A = window.ARCHIVE_DATA;
   const host = document.getElementById("filesApp");
   if (!A || !host) return;
+  await (window.MD_I18N_READY || Promise.resolve());
   const t = window.t || ((k) => k);
   const loc = (window.MDLang && window.MDLang.locale()) || "tr-TR";
 

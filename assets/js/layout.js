@@ -1,8 +1,11 @@
 /* ============================================================
    layout.js — ortak header & footer (i18n + tema + mobil menü)
    ============================================================ */
-(function () {
+(async function () {
   "use strict";
+  // İçerik (metin) override'ları Supabase'den gelmiş olsun ki header/footer
+  // doğru metinle kurulsun (admin panelden düzenlenen değerler).
+  await (window.MD_I18N_READY || Promise.resolve());
   const t = window.t || ((k) => k);
   const L = window.MDLang;
 

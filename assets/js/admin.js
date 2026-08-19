@@ -53,31 +53,8 @@
 
   $("logoutBtn").addEventListener("click", async () => { await sb.auth.signOut(); refreshSession(); });
 
-  /* ---------- OTP (6 haneli kod) girişi ----------
-     E-postadaki davet/magic-link'e tıklamak yerine kod kullanılır — Gmail gibi
-     e-posta servislerinin linki otomatik "ön-tarayıp" tek kullanımlık token'ı
-     tüketmesi sorununu (davet linkinin oturum açmaması) tamamen atlar. */
-  $("otpSendBtn").addEventListener("click", async () => {
-    const email = $("loginEmail").value.trim();
-    if (!email) { $("otpMsg").textContent = "Önce yukarıya e-postanı yaz."; $("otpMsg").className = "admin-msg err"; return; }
-    $("otpMsg").textContent = "Gönderiliyor…"; $("otpMsg").className = "admin-msg";
-    const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
-    if (error) { $("otpMsg").textContent = "Hata: " + error.message; $("otpMsg").className = "admin-msg err"; return; }
-    $("otpStep1").hidden = true; $("otpStep2").hidden = false;
-    $("otpMsg").textContent = "Kod gönderildi, e-postanı kontrol et."; $("otpMsg").className = "admin-msg";
-  });
-  $("otpVerifyBtn").addEventListener("click", async () => {
-    const email = $("loginEmail").value.trim();
-    const code = $("otpCode").value.trim();
-    $("otpMsg").textContent = "Doğrulanıyor…"; $("otpMsg").className = "admin-msg";
-    const { error } = await sb.auth.verifyOtp({ email, token: code, type: "email" });
-    if (error) { $("otpMsg").textContent = "Hata: " + error.message; $("otpMsg").className = "admin-msg err"; return; }
-    $("otpMsg").textContent = "";
-    refreshSession();
-  });
-
   /* ---------- Sekmeler ---------- */
-  let currentTab = "metrics";
+  let currentTab = "content";
   document.querySelectorAll(".admin-tabs button").forEach((b) => {
     b.addEventListener("click", () => {
       document.querySelectorAll(".admin-tabs button").forEach((x) => x.classList.remove("on"));
@@ -91,6 +68,7 @@
 
   const loaded = {};
   function loadTab(tab) {
+    if (tab === "content") return renderContent();
     if (tab === "metrics") return renderMetrics();
     if (tab === "ports") return renderPorts();
     if (tab === "trends") return renderTrends();
@@ -186,6 +164,43 @@
     save: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>',
     trash: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6"/></svg>',
   };
+
+  /* ============================================================
+     Site Metinleri (content) — anasayfa/menü/footer vb. tüm metinler
+     ============================================================ */
+  async function renderContent() {
+    const box = $("tab-content");
+    box.innerHTML = `<div class="admin-card">Yükleniyor…</div>`;
+    const { data, error } = await sb.from("content").select("*").order("key");
+    if (error) { box.innerHTML = `<div class="admin-card err">Hata: ${error.message}</div>`; return; }
+    const holder = document.createElement("div"); holder.className = "admin-card";
+    holder.innerHTML = `
+      <h2>Site Metinleri <span class="admin-hint">(anasayfa açıklamaları, menü, footer, kategori başlıkları vb. — ${data.length} metin)</span></h2>
+      <div class="field" style="max-width:320px"><label>Ara</label><input type="search" id="cQ" placeholder="anahtar veya metin ara…"></div>
+      <div id="contentTbl"></div>`;
+    box.innerHTML = ""; box.appendChild(holder);
+    const tbl = $("contentTbl");
+    function draw(q) {
+      const rows = q
+        ? data.filter((r) => (r.key + " " + (r.tr || "") + " " + (r.en || "")).toLocaleLowerCase("tr").includes(q))
+        : data;
+      buildTable(tbl, {
+        table: "content", pk: ["key"], rows,
+        columns: [
+          { key: "key", label: "Anahtar", editable: false },
+          { key: "tr", label: "Türkçe" },
+          { key: "en", label: "English" },
+        ],
+      });
+    }
+    draw("");
+    let timer;
+    $("cQ").addEventListener("input", (e) => {
+      clearTimeout(timer);
+      const v = e.target.value.trim().toLocaleLowerCase("tr");
+      timer = setTimeout(() => draw(v), 150);
+    });
+  }
 
   /* ============================================================
      Metrikler
