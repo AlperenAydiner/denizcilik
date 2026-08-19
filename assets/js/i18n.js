@@ -63,6 +63,9 @@
       "footer.note": "Bu sayfa bir arayüz tasarım çalışmasıdır. Resmi yayın:",
       "footer.rights": "Tüm hakları saklıdır.",
       "footer.dataSource": "Veri kaynağı",
+      "footer.affiliates": "Bağlı kuruluşlar",
+      "footer.dgm": "Denizcilik Genel Müdürlüğü",
+      "footer.kvkk": "KVKK Dokümanları",
     },
 
     en: {
@@ -122,6 +125,9 @@
       "footer.note": "This page is an interface design study. Official publication:",
       "footer.rights": "All rights reserved.",
       "footer.dataSource": "Data source",
+      "footer.affiliates": "Affiliated institutions",
+      "footer.dgm": "Directorate General of Maritime Affairs",
+      "footer.kvkk": "Data Protection Documents",
     },
   };
 

@@ -56,33 +56,55 @@
   </header>
   <div class="nav-scrim" id="navScrim" hidden></div>`;
 
+  const LOGOS = window.FOOTER_LOGOS || [];
+  const logoStrip = LOGOS.length ? `
+  <div class="logo-strip" aria-label="${t("footer.affiliates")}">
+    <div class="logo-track">
+      ${[0, 1].map(() => LOGOS.map((l) =>
+        `<a class="logo-item" href="${l.href}" target="_blank" rel="noopener">
+           <img src="${l.file}" alt="${l.name}" loading="lazy" height="40"></a>`).join("")).join("")}
+    </div>
+  </div>` : "";
+
   const footer = `
   <footer class="site-footer">
+    ${logoStrip}
     <div class="wrap">
-      <div class="footer-top">
+      <div class="footer-main">
         <div class="footer-brand">
-          <span class="brand-mark footer-mark"><img class="footer-logo" src="assets/img/uab-logo.svg" alt="${t("site.org")}" width="190" height="61"></span>
-          <div class="footer-contact">
-            <span>Hakkı Turayliç Cad. No:5, 06338 Emek / Ankara</span>
-            <span>${t("contact.phone")}: <a href="tel:03122031000">0312 203 10 00</a> · ${t("contact.callcenter")}: ALO 123</span>
+          <span class="brand-mark footer-mark"><img class="footer-logo" src="assets/img/uab-logo.svg" alt="${t("site.org")}" width="190" height="61" loading="lazy"></span>
+          <p class="footer-org">${t("site.org")}<br><b>${t("site.sub1")} ${t("site.sub2")}</b></p>
+        </div>
+
+        <div class="footer-info">
+          <div class="fi-item">
+            <span class="fi-ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21s7-5.5 7-11a7 7 0 10-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+            <span class="fi-tx"><b>${t("contact.address")}</b>Hakkı Turayliç Cad. No:5<br>06338 Emek / Ankara</span>
+          </div>
+          <div class="fi-item">
+            <span class="fi-ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .3 1.9.6 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.1a2 2 0 012.1-.5c.9.3 1.8.5 2.8.6a2 2 0 011.7 2z"/></svg></span>
+            <span class="fi-tx"><b>${t("contact.phone")}</b><a href="tel:03122031000">0312 203 10 00</a></span>
+          </div>
+          <div class="fi-item">
+            <span class="fi-ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 12a8 8 0 1116 0v5a2 2 0 01-2 2h-2v-6h4M4 13h4v6H6a2 2 0 01-2-2z"/></svg></span>
+            <span class="fi-tx"><b>${t("contact.callcenter")}</b><a href="https://www.uab.gov.tr/cagri-merkezi" target="_blank" rel="noopener">ALO 123</a></span>
           </div>
         </div>
-        <div class="footer-col"><h4>${t("footer.stats")}</h4>
-          <a href="yuk.html">${t("nav.yuk")}</a><a href="konteyner.html">${t("nav.konteyner")}</a>
-          <a href="bogazlar.html">${t("nav.bogazlar")}</a><a href="kabotaj.html">${t("nav.kabotaj")}</a></div>
-        <div class="footer-col"><h4>&nbsp;</h4>
-          <a href="kruvaziyer.html">${t("nav.kruvaziyer")}</a><a href="roro.html">${t("nav.roro")}</a>
-          <a href="gemi.html">${t("nav.gemi")}</a><a href="filo.html">${t("nav.filo")}</a></div>
-        <div class="footer-col"><h4>${t("footer.corp")}</h4>
-          <a href="dosyalar.html">${t("nav.dosyalar")}</a><a href="harita.html">${t("nav.map")}</a>
-          <a href="iletisim.html">${t("nav.contact")}</a><a href="site-haritasi.html">${t("nav.sitemap")}</a></div>
+
+        <nav class="footer-links" aria-label="${t("footer.corp")}">
+          <a href="index.html">${t("nav.home")}</a>
+          <a href="https://denizcilik.uab.gov.tr/" target="_blank" rel="noopener">${t("footer.dgm")}</a>
+          <a href="dosyalar.html">${t("nav.dosyalar")}</a>
+          <a href="harita.html">${t("nav.map")}</a>
+          <a href="diger-istatistikler.html">${t("nav.other")}</a>
+          <a href="iletisim.html">${t("nav.contact")}</a>
+          <a href="site-haritasi.html">${t("nav.sitemap")}</a>
+          <a href="https://www.uab.gov.tr/kvkkdokuman" target="_blank" rel="noopener">${t("footer.kvkk")}</a>
+        </nav>
       </div>
-      <div class="footer-note">${t("footer.note")}
-        <a href="https://denizcilikistatistikleri.uab.gov.tr/" target="_blank" rel="noopener">denizcilikistatistikleri.uab.gov.tr</a>
-      </div>
+
       <div class="footer-bottom">
-        <span>© <span data-year-now>2026</span> ${t("site.org")}</span>
-        <span>${t("footer.dataSource")}: denizcilikistatistikleri.uab.gov.tr</span>
+        <span>© <span data-year-now>2026</span> ${t("site.org")} — ${t("footer.rights")}</span>
       </div>
     </div>
   </footer>`;
