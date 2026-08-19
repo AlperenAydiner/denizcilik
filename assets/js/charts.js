@@ -12,6 +12,13 @@
   };
   const nf = (window.MDUtil && window.MDUtil.nf0) || new Intl.NumberFormat("tr-TR");
 
+  /* Yönetim panelinde tıklanıp düzenlenebilsin diye, grafik öğesine kaynak
+     veritabanı satırını iliştirir. Panel yoksa hiçbir etkisi olmaz. */
+  function markEdit(node, desc) {
+    if (!desc) return;
+    node.setAttribute("data-edit", JSON.stringify(desc));
+  }
+
   // Ortak tooltip
   let tip;
   function getTip() {
@@ -87,6 +94,7 @@
       // noktalar + hover
       pts.forEach((p, i) => {
         const dot = el("circle", { cx: p[0], cy: p[1], r: 4, fill: "#ffffff", stroke: s.color, "stroke-width": 2, style: "cursor:pointer" });
+        if (s.edit) markEdit(dot, s.edit(i));
         dot.addEventListener("mouseenter", () => {
           dot.setAttribute("r", 6);
           const rect = host.getBoundingClientRect(), sc = rect.width / W;
@@ -115,6 +123,7 @@
       svg.appendChild(el("rect", { x: labelW, y: y + 8, width: barMax, height: 22, rx: 7, fill: "var(--surface-2)" }));
       const w = (barMax * d.value) / max;
       const bar = el("rect", { x: labelW, y: y + 8, width: 0, height: 22, rx: 7, fill: d.color || "var(--accent)", class: "bar-rect", style: "cursor:pointer" });
+      markEdit(bar, d.edit);
       svg.appendChild(bar);
       bar.style.transition = "width 1.2s cubic-bezier(0.22,1,0.36,1)";
       bar.style.transitionDelay = i * 60 + "ms";
@@ -152,6 +161,7 @@
         d: `M${x1},${y1}A${R},${R} 0 ${large} 1 ${x2},${y2}L${xi1},${yi1}A${r},${r} 0 ${large} 0 ${xi2},${yi2}Z`,
         fill: d.color, style: "cursor:pointer;opacity:0;transition:opacity 0.5s,transform 0.25s;transform-origin:center",
       });
+      markEdit(path, d.edit);
       setTimeout(() => (path.style.opacity = "1"), i * 90);
       path.addEventListener("mouseenter", () => {
         path.style.transform = "scale(1.03)";
@@ -228,7 +238,7 @@
           const v = se.values[i] || 0; if (!v) return;
           const y0 = Y(acc + v), h = Y(acc) - Y(acc + v);
           const r = el("rect", { x: cx - inner / 2, y: y0, width: inner, height: Math.max(h, 0), fill: se.color, style: "cursor:pointer" });
-          attach(r, lb, se, v, opts, host, W);
+          attach(r, lb, se, v, opts, host, W, i);
           svg.appendChild(r); acc += v;
         });
       } else {
@@ -237,14 +247,15 @@
           const v = se.values[i] || 0; if (!v) return;
           const x = cx - inner / 2 + si * sw;
           const r = el("rect", { x: x, y: Y(v), width: Math.max(sw - 2, 2), height: Math.max(ih - (Y(v) - pad.t), 0), rx: 3, fill: se.color, style: "cursor:pointer" });
-          attach(r, lb, se, v, opts, host, W);
+          attach(r, lb, se, v, opts, host, W, i);
           svg.appendChild(r);
         });
       }
     });
     host.appendChild(svg);
 
-    function attach(node, lb, se, v, opts2, hostEl, WW) {
+    function attach(node, lb, se, v, opts2, hostEl, WW, idx) {
+      if (se.edit) markEdit(node, se.edit(idx));
       node.addEventListener("mouseenter", (ev) => {
         node.style.opacity = "0.82";
         const rect = hostEl.getBoundingClientRect(), sc = rect.width / WW;

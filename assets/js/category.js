@@ -12,62 +12,60 @@
   const t = window.t || ((k) => k);
   const loc = (window.MDLang && window.MDLang.locale()) || "tr-TR";
 
-  const M_TR = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
-  const M_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const lang = () => (window.MDLang && window.MDLang.get()) || "tr";
-  const MON = () => (lang() === "en" ? M_EN : M_TR);
-  const nm = (o) => (lang() === "en" ? o.en : o.tr);
+  // Ay adları da içerikten gelir (panelden düzenlenebilsin)
+  const MON = () => Array.from({ length: 12 }, (_, i) => t("month." + (i + 1)));
+  const nm = (o) => t(o.key);
+  // Deniz bölgeleri: filtre DB'deki Türkçe değere göre, etiket içerik anahtarından
+  const SEAS = [["Marmara", "sea.marmara"], ["Ege", "sea.ege"],
+                ["Akdeniz", "sea.akdeniz"], ["Karadeniz", "sea.karadeniz"]];
+  const seaKeyOf = (v) => (SEAS.find((s) => s[0] === v) || [null, v])[1];
 
   /* Kategori yapılandırması — seriler gerçek Excel sütunlarından türetildi */
   const CFG = {
     yuk: {
       ic: "yuk", accent: "--c-yuk", unit: "unit.ton", headKey: "yuk_ton", arch: "yuk",
       trendKey: "yuk_ton",
-      series: [{ k: "yukleme", tr: "Yükleme", en: "Loading" },
-               { k: "bosaltma", tr: "Boşaltma", en: "Unloading" }],
-      donut: { dim: "kargo_tipi", tr: "Kargo tipine göre", en: "By cargo type" },
-      barsDim: { dim: "ulke", tr: "En çok yük taşınan ülkeler", en: "Top partner countries", top: 10 },
+      series: [{ k: "yukleme", key: "series.yukleme" }, { k: "bosaltma", key: "series.bosaltma" }],
+      donut: { dim: "kargo_tipi", key: "dim.yuk.donut" },
+      barsDim: { dim: "ulke", key: "dim.yuk.bars", top: 10 },
     },
     konteyner: {
       ic: "konteyner", accent: "--c-konteyner", unit: "unit.teu", headKey: "konteyner_teu", arch: "konteyner",
       trendKey: "konteyner_teu",
-      series: [{ k: "yukleme", tr: "Yükleme", en: "Loading" },
-               { k: "bosaltma", tr: "Boşaltma", en: "Unloading" }],
+      series: [{ k: "yukleme", key: "series.yukleme" }, { k: "bosaltma", key: "series.bosaltma" }],
       split: true,
-      barsDim: { dim: "ulke", tr: "En çok konteyner taşınan ülkeler", en: "Top partner countries", top: 10 },
+      barsDim: { dim: "ulke", key: "dim.konteyner.bars", top: 10 },
     },
     gemi: {
       ic: "gemi", accent: "--c-gemi", unit: "unit.gemi", headKey: "gemi_sayisi", arch: "gemi",
       trendKey: "gemi_gros_ton",
-      series: [{ k: "turk", tr: "Türk bayraklı", en: "Turkish flag" },
-               { k: "yabanci", tr: "Yabancı bayraklı", en: "Foreign flag" }],
-      split: true, splitTitleTr: "Bayrak dağılımı", splitTitleEn: "Flag split",
+      series: [{ k: "turk", key: "series.turk" }, { k: "yabanci", key: "series.yabanci" }],
+      split: true, splitKey: "dim.gemi.split",
     },
     kruvaziyer: {
       ic: "kruvaziyer", accent: "--c-kruvaziyer", unit: "unit.yolcu", headKey: "kruvaziyer_yolcu", arch: "kruvaziyer",
       trendKey: "kruvaziyer_yolcu",
-      series: [{ k: "gelen", tr: "Gelen", en: "Inbound" },
-               { k: "giden", tr: "Giden", en: "Outbound" },
-               { k: "transit", tr: "Transit", en: "Transit" }],
-      split: true, splitTitleTr: "Yolcu yönü", splitTitleEn: "Passenger direction",
+      series: [{ k: "gelen", key: "series.gelen" }, { k: "giden", key: "series.giden" },
+               { k: "transit", key: "series.transit" }],
+      split: true, splitKey: "dim.kruvaziyer.split",
     },
     roro: {
       ic: "roro", accent: "--c-roro", unit: "unit.arac", headKey: "roro_arac", arch: "roro",
       trendKey: "roro_arac_yil",
-      series: [{ k: "gelen", tr: "Gelen araç", en: "Inbound" },
-               { k: "giden", tr: "Giden araç", en: "Outbound" }],
-      split: true, splitTitleTr: "Araç yönü", splitTitleEn: "Vehicle direction",
-      barsDim: { dim: "arac_cinsi", tr: "Araç cinsine göre", en: "By vehicle type", top: 10 },
+      series: [{ k: "gelen", key: "series.gelenArac" }, { k: "giden", key: "series.gidenArac" }],
+      split: true, splitKey: "dim.roro.split",
+      barsDim: { dim: "arac_cinsi", key: "dim.roro.bars", top: 10 },
     },
     bogazlar: { ic: "bogaz", accent: "--c-bogaz", unit: "unit.gecis", headKey: "bogaz_gecis", arch: "bogazlar",
       trendKey: null, series: [] },
     kabotaj: { ic: "kabotaj", accent: "--c-kabotaj", unit: "unit.yolcu", headKey: "kabotaj_yolcu", arch: "kabotaj",
       trendKey: "kabotaj_yolcu", series: [],
-      dual: { a: "kabotaj_yolcu", aTr: "Yolcu", aEn: "Passengers", b: "kabotaj_arac", bTr: "Araç", bEn: "Vehicles" } },
+      dual: { a: "kabotaj_yolcu", aKey: "dim.kabotaj.a", b: "kabotaj_arac", bKey: "dim.kabotaj.b" } },
     filo: { ic: "filo", accent: "--c-filo", unit: "unit.gemi", headKey: "filo_gemi", arch: "filo",
       trendKey: null, series: [], useDetailTrend: true,
-      barsDim: { dim: "gemi_cinsi", tr: "Gemi cinsine göre", en: "By ship type", top: 12 },
-      donut: { dim: "gemi_cinsi", tr: "Filo bileşimi", en: "Fleet composition" } },
+      barsDim: { dim: "gemi_cinsi", key: "dim.filo.bars", top: 12 },
+      donut: { dim: "gemi_cinsi", key: "dim.filo.donut" } },
   };
 
   const cat = document.body.dataset.cat;
@@ -139,7 +137,7 @@
           <button type="button" data-mall data-i18n="ui.all">${t("ui.all")}</button>
           <button type="button" data-mnone data-i18n="ui.clear">${t("ui.clear")}</button></span></label>
         <div class="filter-months">${avail.map((mo) =>
-          `<button type="button" data-month="${mo}" class="${state.months.includes(mo) ? "on" : ""}">${MON()[mo - 1]}</button>`).join("")}</div>
+          `<button type="button" data-month="${mo}" class="${state.months.includes(mo) ? "on" : ""}" data-i18n="month.${mo}">${MON()[mo - 1]}</button>`).join("")}</div>
         <div class="filter-note">${state.months.length}/${avail.length} <span data-i18n="ui.monthSelected">${t("ui.monthSelected")}</span></div>
       </div>`;
     }
@@ -147,15 +145,14 @@
     if (cfg.series.length) {
       h += `<div class="filter-group"><label data-i18n="ui.series">${t("ui.series")}</label><div class="filter-regions">
         <button type="button" data-seri="toplam" class="${state.seri === "toplam" ? "on" : ""}" data-i18n="ui.total">${t("ui.total")}</button>
-        ${cfg.series.map((s) => `<button type="button" data-seri="${s.k}" class="${state.seri === s.k ? "on" : ""}">${nm(s)}</button>`).join("")}
+        ${cfg.series.map((s) => `<button type="button" data-seri="${s.k}" class="${state.seri === s.k ? "on" : ""}" data-i18n="${s.key}">${nm(s)}</button>`).join("")}
       </div></div>`;
     }
 
     if (pRows().length) {
-      const SEAS = ["Marmara", "Ege", "Akdeniz", "Karadeniz"];
       h += `<div class="filter-group"><label data-i18n="ui.region">${t("ui.region")}</label><div class="filter-regions">
         <button type="button" data-region="all" class="${state.region === "all" ? "on" : ""}" data-i18n="ui.all">${t("ui.all")}</button>
-        ${SEAS.map((s) => `<button type="button" data-region="${s}" class="${state.region === s ? "on" : ""}">${s}</button>`).join("")}
+        ${SEAS.map(([v, key]) => `<button type="button" data-region="${v}" class="${state.region === v ? "on" : ""}" data-i18n="${key}">${t(key)}</button>`).join("")}
       </div></div>`;
     }
 
@@ -200,8 +197,9 @@
       sub = String(state.year);
     }
     const hv = U.human(val);
-    const seriName = state.seri === "toplam" ? t("ui.total")
-      : nm(cfg.series.find((s) => s.k === state.seri) || { tr: "", en: "" });
+    const sObj = cfg.series.find((s) => s.k === state.seri);
+    const seriKey = state.seri === "toplam" ? "ui.total" : (sObj ? sObj.key : null);
+    const seriName = seriKey ? t(seriKey) : "";
 
     let delta = "";
     if (avail.length && monthsFor(state.year - 1).length) {
@@ -212,10 +210,11 @@
       }
     }
 
+    const magSpan = hv.uKey ? `<span data-i18n="${hv.uKey}">${hv.u}</span> ` : "";
     const head = `<div class="dash-stat" style="--kc:${accent}">
       <div class="ds-top"><span class="ds-ic">${icon(cfg.ic)}</span>
-        <span class="ds-label">${seriName}</span>${delta || `<span class="kpi-year">${state.year}</span>`}</div>
-      <div class="ds-num">${hv.v} <span class="ds-unit">${hv.u} ${unit}</span></div>
+        <span class="ds-label"${seriKey ? ` data-i18n="${seriKey}"` : ""}>${seriName}</span>${delta || `<span class="kpi-year">${state.year}</span>`}</div>
+      <div class="ds-num" data-derived="Bu toplam, seçili ayların veritabanındaki değerlerinden hesaplanıyor. Değiştirmek için aşağıdaki “aylara göre dağılım” grafiğinde ilgili sütuna tıkla.">${hv.v} <span class="ds-unit">${magSpan}<span data-i18n="${cfg.unit}">${unit}</span></span></div>
       <div class="ds-sub">${sub}${partial ? " · " + t("ui.partial") : ""}</div>
     </div>`;
 
@@ -226,14 +225,38 @@
     if (avail.length) cards += card("dMonth", t("cat.monthTitle"), `${state.year} · ${unit}`, "cat.monthTitle");
     if (catTrend()) cards += card("dTrend", t("cat.trendTitle"), unit, "cat.trendTitle");
     if (cfg.dual) cards += card("dDual", t("cat.trendTitle"), "", "cat.trendTitle");
-    if (pRows().length) cards += card("dPorts", t("cat.portsTitle") + (state.region !== "all" ? " — " + state.region : ""), `${state.year} · ${unit}`);
+    if (pRows().length) cards += card("dPorts", t("cat.portsTitle") + (state.region !== "all" ? " — " + t(seaKeyOf(state.region)) : ""), `${state.year} · ${unit}`);
     if (cfg.split && cfg.series.length > 1)
-      cards += card("dSplit", lang() === "en" ? (cfg.splitTitleEn || "Split") : (cfg.splitTitleTr || "Dağılım"), String(state.year));
-    if (cfg.donut && bRows().some((r) => r.boyut === cfg.donut.dim)) cards += card("dDonut", nm(cfg.donut), unit);
-    if (cfg.barsDim && bRows().some((r) => r.boyut === cfg.barsDim.dim)) cards += card("dBars", nm(cfg.barsDim), unit);
+      cards += card("dSplit", t(cfg.splitKey || "ui.split"), String(state.year), cfg.splitKey || "ui.split");
+    if (cfg.donut && bRows().some((r) => r.boyut === cfg.donut.dim)) cards += card("dDonut", t(cfg.donut.key), unit, cfg.donut.key);
+    if (cfg.barsDim && bRows().some((r) => r.boyut === cfg.barsDim.dim)) cards += card("dBars", t(cfg.barsDim.key), unit, cfg.barsDim.key);
 
     box.innerHTML = head + `<div class="dash-cards">${cards}</div>`;
     setTimeout(draw, 40);
+  }
+
+  /* Grafik öğesi → kaynak veritabanı satırı (panelde tıklayınca düzenlenir) */
+  function monthEdit(avail, seriKey, seriName) {
+    return (i) => {
+      const mo = avail[i];
+      if (mo == null) return null;
+      const l = `${MON()[mo - 1]} ${state.year} · ${seriName}`;
+      if (cat === "bogazlar") {
+        return { t: "fact_strait", m: { bogaz: "istanbul", yil: state.year, ay: mo },
+                 f: seriKey === "gros_ton" ? "gros_ton" : "gemi_adedi", l, k: "num" };
+      }
+      return { t: "fact_monthly", m: { kategori: cat, yil: state.year, ay: mo, seri: seriKey },
+               f: "deger", l, k: "num" };
+    };
+  }
+  function bdEdit(r) {
+    // Ülke kırılımı fact_country'de, diğerleri fact_breakdown'da tutulur
+    if (r._src === "fact_country") {
+      return { t: "fact_country", m: { kategori: r.kategori, yil: r.yil, ulke: r.etiket, seri: r.seri },
+               f: "deger", l: `${r.etiket} · ${r.yil}`, k: "num" };
+    }
+    return { t: "fact_breakdown", m: { kategori: r.kategori, yil: r.yil, boyut: r.boyut, etiket: r.etiket, seri: r.seri },
+             f: "deger", l: `${r.etiket} · ${r.yil}`, k: "num" };
   }
 
   function draw() {
@@ -249,8 +272,10 @@
       const labels = avail.map((x) => MON()[x - 1]);
       const series = cfg.series.length
         ? cfg.series.map((s, i) => ({ name: nm(s), color: ramp[i % ramp.length],
-            values: avail.map((mo) => mVal(state.year, mo, s.k)) }))
-        : [{ name: t("ui.total"), color: accent, values: avail.map((mo) => mVal(state.year, mo, "toplam")) }];
+            values: avail.map((mo) => mVal(state.year, mo, s.k)),
+            edit: monthEdit(avail, s.k, nm(s)) }))
+        : [{ name: t("ui.total"), color: accent, values: avail.map((mo) => mVal(state.year, mo, "toplam")),
+            edit: monthEdit(avail, "toplam", t("ui.total")) }];
       C.columns(mh, { labels, series, unit, stacked: cfg.series.length > 1 });
     }
 
@@ -258,15 +283,26 @@
     const tr = catTrend();
     if (th && tr) {
       const ys = Object.keys(tr).sort();
-      C.lineArea(th, { labels: ys, unit, series: [{ name: t("cat.trendTitle"), color: accent, values: ys.map((y) => tr[y]) }] });
+      // Yalnız trends tablosundan geleni doğrudan düzenlenebilir yap; türetilmiş
+      // trend (aylıklardan toplanan) tek bir satıra karşılık gelmiyor.
+      const direct = !!(cfg.trendKey && T[cfg.trendKey]);
+      C.lineArea(th, { labels: ys, unit, series: [{
+        name: t("cat.trendTitle"), color: accent, values: ys.map((y) => tr[y]),
+        edit: direct ? (i) => ({ t: "trends", m: { metric: cfg.trendKey, year: +ys[i] },
+                                 f: "value", l: `${ys[i]} · ${t("cat.trendTitle")}`, k: "num" }) : null,
+      }] });
     }
 
     const dh = document.getElementById("dDual");
     if (dh && cfg.dual) {
       const a = T[cfg.dual.a] || {}, b = T[cfg.dual.b] || {}, ys = Object.keys(a).sort();
       C.lineArea(dh, { labels: ys, unit: "", series: [
-        { name: lang() === "en" ? cfg.dual.aEn : cfg.dual.aTr, color: accent, values: ys.map((y) => a[y] || 0) },
-        { name: lang() === "en" ? cfg.dual.bEn : cfg.dual.bTr, color: palette[2], values: ys.map((y) => b[y] || 0) }] });
+        { name: t(cfg.dual.aKey), color: accent, values: ys.map((y) => a[y] || 0),
+          edit: (i) => ({ t: "trends", m: { metric: cfg.dual.a, year: +ys[i] }, f: "value",
+                          l: `${ys[i]} · ${t(cfg.dual.aKey)}`, k: "num" }) },
+        { name: t(cfg.dual.bKey), color: palette[2], values: ys.map((y) => b[y] || 0),
+          edit: (i) => ({ t: "trends", m: { metric: cfg.dual.b, year: +ys[i] }, f: "value",
+                          l: `${ys[i]} · ${t(cfg.dual.bKey)}`, k: "num" }) }] });
     }
 
     const ph = document.getElementById("dPorts");
@@ -280,12 +316,17 @@
         rows = rows.filter((r) => inR.has(r.liman));
       }
       const top = rows.sort((a, b) => b.deger - a.deger).slice(0, 10);
-      if (top.length) C.bars(ph, { unit, items: top.map((r) => ({ label: r.liman, value: r.deger, color: accent })) });
+      if (top.length) C.bars(ph, { unit, items: top.map((r) => ({
+        label: r.liman, value: r.deger, color: accent,
+        edit: { t: "fact_port", m: { kategori: cat, yil: useYear, liman: r.liman, seri: seri },
+                f: "deger", l: `${r.liman} · ${useYear}`, k: "num" },
+      })) });
       else ph.innerHTML = `<p class="csub" data-i18n="cat.noPortData">${t("cat.noPortData")}</p>`;
     }
 
     const sh = document.getElementById("dSplit");
     if (sh) {
+      // Seçili ayların toplamı — tek satır değil, bu yüzden düzenlenebilir değil
       const items = cfg.series.map((s, i) => ({ label: nm(s), value: sumSel(s.k), color: ramp[i % ramp.length] }))
         .filter((x) => x.value > 0);
       if (items.length > 1) C.donut(sh, { unit, items });
@@ -297,7 +338,7 @@
       const rows = bRows().filter((r) => r.boyut === cfg.donut.dim);
       const yr = Math.max(...rows.map((r) => r.yil));
       const items = rows.filter((r) => r.yil === yr).sort((a, b) => b.deger - a.deger).slice(0, 6)
-        .map((r, i) => ({ label: short(r.etiket), value: r.deger, color: palette[i % palette.length] }));
+        .map((r, i) => ({ label: short(r.etiket), value: r.deger, color: palette[i % palette.length], edit: bdEdit(r) }));
       if (items.length) C.donut(dnh, { unit, items });
     }
 
@@ -306,7 +347,7 @@
       const rows = bRows().filter((r) => r.boyut === cfg.barsDim.dim);
       const yr = Math.max(...rows.map((r) => r.yil));
       const items = rows.filter((r) => r.yil === yr).sort((a, b) => b.deger - a.deger).slice(0, cfg.barsDim.top)
-        .map((r) => ({ label: short(r.etiket), value: r.deger, color: accent }));
+        .map((r) => ({ label: short(r.etiket), value: r.deger, color: accent, edit: bdEdit(r) }));
       if (items.length) C.bars(bh, { unit, items });
     }
   }
@@ -370,8 +411,10 @@
       get(`fact_country?select=*&${q}`),
     ]);
     // ülke kırılımı, diğer boyutlarla aynı fact_breakdown şekline (boyut='ulke') dönüştürülüp birleştirilir
+    // _src: düzenleme sırasında hangi tabloya yazılacağını bilmek için
     const countryAsBreakdown = country.map((r) => ({
       kategori: r.kategori, yil: r.yil, boyut: "ulke", etiket: r.ulke, seri: r.seri, deger: r.deger,
+      _src: "fact_country",
     }));
     if (!monthly.length && !ports.length && !breakdown.length) throw new Error("boş sonuç");
     const merged = breakdown.concat(countryAsBreakdown);

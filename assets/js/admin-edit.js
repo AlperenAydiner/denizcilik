@@ -85,6 +85,33 @@
     if (!r.ok) throw new Error(r.status === 401 ? "oturum" : "HTTP " + r.status);
   }
 
+  /* ---------- Genel veritabanı hücresi (grafikler, tablolar) ----------
+     data-edit = {t:tablo, m:{eşleşme}, f:sütun, l:etiket, k:"num"|"text"} */
+  const matchQuery = (m) =>
+    Object.keys(m).map((k) => `${encodeURIComponent(k)}=eq.${encodeURIComponent(m[k])}`).join("&");
+
+  async function readCell(d) {
+    const r = await authFetch(`${SUPA_URL}/rest/v1/${d.t}?${matchQuery(d.m)}&select=${encodeURIComponent(d.f)}`,
+      { method: "GET" });
+    if (!r.ok) throw new Error(r.status === 401 ? "oturum" : "HTTP " + r.status);
+    const rows = await r.json();
+    if (!rows.length) throw new Error("kayıt yok");
+    return rows[0][d.f];
+  }
+
+  async function saveCell(d, value) {
+    const body = {}; body[d.f] = value;
+    const r = await authFetch(`${SUPA_URL}/rest/v1/${d.t}?${matchQuery(d.m)}`, {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) throw new Error(r.status === 401 ? "oturum" : "HTTP " + r.status);
+    const rows = await r.json();
+    // Sessiz başarısızlık olmasın: eşleşen satır yoksa kullanıcıya söyle
+    if (!rows.length) throw new Error("eşleşen kayıt bulunamadı");
+  }
+
   /* ---------- Sayfalar (üst şerit menüsü) ---------- */
   const PAGES = [
     ["index.html", "Anasayfa"],
@@ -209,41 +236,59 @@
     box.style.left = left + "px";
   }
 
+  const raw = (k) => ((window.MDLang && window.MDLang.raw) ? window.MDLang.raw(k) : { tr: "", en: "" });
+
   function openTextPopover(el) {
     closePopover();
-    const key = el.dataset.i18n;
-    const cur = (window.MDLang && window.MDLang.raw) ? window.MDLang.raw(key) : { tr: el.textContent, en: "" };
+    const key = el.dataset.i18n || null;
+    const hrefKey = el.dataset.i18nHref || null;
+    const cur = key ? raw(key) : null;
+    const curHref = hrefKey ? raw(hrefKey) : null;
+    const headKey = key || hrefKey;
+
     const box = document.createElement("div");
     box.className = "md-edit-pop";
     box.innerHTML = `
       <div class="mep-head">
-        <span class="mep-title">${friendly(key)}<em>${key}</em></span>
+        <span class="mep-title">${key ? friendly(key) : "Bağlantı adresi"}<em>${headKey}</em></span>
         <button type="button" class="mep-close" title="Kapat">${ICON.close}</button>
       </div>
-      <label>Türkçe</label>
-      <textarea class="mep-tr" rows="2"></textarea>
+      ${key ? `<label>Türkçe</label><textarea class="mep-tr" rows="2"></textarea>
       <label>İngilizcesi <span class="mep-opt">(isteğe bağlı)</span></label>
-      <textarea class="mep-en" rows="2"></textarea>
+      <textarea class="mep-en" rows="2"></textarea>` : ""}
+      ${hrefKey ? `<label>Bağlantı adresi <span class="mep-opt">(tıklayınca gidilecek yer)</span></label>
+      <input type="text" class="mep-href" spellcheck="false">` : ""}
+      ${key === "home.year" ? `<p class="mep-note">Boş bırakırsan yıl otomatik olarak veritabanındaki en güncel yıldan gelir.</p>` : ""}
       <div class="mep-actions">
         <button type="button" class="btn btn-ghost mep-cancel">Vazgeç</button>
         <button type="button" class="btn btn-primary mep-save">Kaydet</button>
       </div>`;
-    box.querySelector(".mep-tr").value = cur.tr;
-    box.querySelector(".mep-en").value = cur.en;
+    if (key) {
+      box.querySelector(".mep-tr").value = cur.tr;
+      box.querySelector(".mep-en").value = cur.en;
+    }
+    if (hrefKey) box.querySelector(".mep-href").value = curHref.tr;
     positionNear(box, el);
     popover = box;
-    box.querySelector(".mep-tr").focus();
+    (box.querySelector(".mep-tr") || box.querySelector(".mep-href")).focus();
 
     box.querySelector(".mep-close").addEventListener("click", closePopover);
     box.querySelector(".mep-cancel").addEventListener("click", closePopover);
     box.querySelector(".mep-save").addEventListener("click", async () => {
-      const tr = box.querySelector(".mep-tr").value;
-      const en = box.querySelector(".mep-en").value;
       const save = box.querySelector(".mep-save");
       save.disabled = true; save.textContent = "Kaydediliyor…";
       try {
-        await saveContent(key, tr, en);
-        if (window.MDLang && window.MDLang.setRaw) window.MDLang.setRaw(key, tr, en);
+        if (key) {
+          const tr = box.querySelector(".mep-tr").value;
+          const en = box.querySelector(".mep-en").value;
+          await saveContent(key, tr, en);
+          if (window.MDLang && window.MDLang.setRaw) window.MDLang.setRaw(key, tr, en);
+        }
+        if (hrefKey) {
+          const u = box.querySelector(".mep-href").value.trim();
+          await saveContent(hrefKey, u, u); // adres dile göre değişmez
+          if (window.MDLang && window.MDLang.setRaw) window.MDLang.setRaw(hrefKey, u, u);
+        }
         closePopover();
         showToast("Kaydedildi.");
       } catch (e) {
@@ -252,6 +297,78 @@
         showToast("Kaydedilemedi: " + e.message, "err");
       }
     });
+  }
+
+  /* Grafik sütunu / tablo hücresi → kaynak satırı düzenle */
+  async function openCellPopover(el) {
+    closePopover();
+    let d;
+    try { d = JSON.parse(el.getAttribute("data-edit")); } catch { return; }
+    const isNum = d.k !== "text";
+    const box = document.createElement("div");
+    box.className = "md-edit-pop";
+    box.innerHTML = `
+      <div class="mep-head">
+        <span class="mep-title">${d.l || "Veri"}<em>${d.t} · ${d.f}</em></span>
+        <button type="button" class="mep-close" title="Kapat">${ICON.close}</button>
+      </div>
+      <label>${isNum ? "Değer" : "Metin"}</label>
+      <input type="${isNum ? "number" : "text"}" class="mep-val" ${isNum ? 'step="any"' : ""} placeholder="Yükleniyor…" disabled>
+      ${d.w ? `<p class="mep-note warn">${d.w}</p>` : ""}
+      <p class="mep-note">Bu değer veritabanında saklanıyor; kaydedince grafikler yeniden hesaplanır.</p>
+      <div class="mep-actions">
+        <button type="button" class="btn btn-ghost mep-cancel">Vazgeç</button>
+        <button type="button" class="btn btn-primary mep-save" disabled>Kaydet</button>
+      </div>`;
+    positionNear(box, el);
+    popover = box;
+    box.querySelector(".mep-close").addEventListener("click", closePopover);
+    box.querySelector(".mep-cancel").addEventListener("click", closePopover);
+
+    const input = box.querySelector(".mep-val");
+    const save = box.querySelector(".mep-save");
+    try {
+      const v = await readCell(d);
+      if (popover !== box) return; // arada kapatılmış
+      input.value = v == null ? "" : v;
+      input.disabled = false; input.placeholder = ""; save.disabled = false;
+      input.focus(); input.select();
+    } catch (e) {
+      if (e.message === "oturum") { sessionLost(); return; }
+      input.placeholder = "Okunamadı: " + e.message;
+      return;
+    }
+
+    save.addEventListener("click", async () => {
+      save.disabled = true; save.textContent = "Kaydediliyor…";
+      try {
+        await saveCell(d, isNum ? Number(input.value) : input.value);
+        showToast("Kaydedildi, sayfa yenileniyor…");
+        setTimeout(() => location.reload(), 700);
+      } catch (e2) {
+        if (e2.message === "oturum") { sessionLost(); return; }
+        save.disabled = false; save.textContent = "Kaydet";
+        showToast("Kaydedilemedi: " + e2.message, "err");
+      }
+    });
+  }
+
+  /* Hesaplanmış (türetilmiş) sayı — nereden düzenleneceğini anlat */
+  function openInfoPopover(el) {
+    closePopover();
+    const box = document.createElement("div");
+    box.className = "md-edit-pop";
+    box.innerHTML = `
+      <div class="mep-head">
+        <span class="mep-title">Hesaplanan değer<em>doğrudan düzenlenmez</em></span>
+        <button type="button" class="mep-close" title="Kapat">${ICON.close}</button>
+      </div>
+      <p class="mep-note">${el.getAttribute("data-derived")}</p>
+      <div class="mep-actions"><button type="button" class="btn btn-primary mep-cancel">Anladım</button></div>`;
+    positionNear(box, el);
+    popover = box;
+    box.querySelector(".mep-close").addEventListener("click", closePopover);
+    box.querySelector(".mep-cancel").addEventListener("click", closePopover);
   }
 
   function openMetricPopover(el) {
@@ -303,11 +420,17 @@
       if (popover) closePopover();
       if (!inShell) return;
 
+      const cEl = e.target.closest("[data-edit]");
+      if (cEl) { e.preventDefault(); e.stopPropagation(); openCellPopover(cEl); return; }
+
       const mEl = e.target.closest("[data-metric-key]");
       if (mEl) { e.preventDefault(); e.stopPropagation(); openMetricPopover(mEl); return; }
 
-      const tEl = e.target.closest("[data-i18n]");
+      const tEl = e.target.closest("[data-i18n], [data-i18n-href]");
       if (tEl) { e.preventDefault(); e.stopPropagation(); openTextPopover(tEl); return; }
+
+      const dEl = e.target.closest("[data-derived]");
+      if (dEl) { e.preventDefault(); e.stopPropagation(); openInfoPopover(dEl); return; }
 
       // Düzenleme modunda bağlantılar kapalı — sayfa geçişi üstteki menüden
       const a = e.target.closest("a[href]");

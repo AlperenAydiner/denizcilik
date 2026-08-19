@@ -76,9 +76,14 @@
         <th data-k="name" data-i18n="map.port">${t("map.port")}</th><th data-k="sea" data-i18n="map.sea">${t("map.sea")}</th>
         <th data-k="yuk_ton" style="cursor:pointer"><span data-i18n="map.cargo">${t("map.cargo")}</span> ↕</th>
         <th data-k="konteyner_teu" style="cursor:pointer"><span data-i18n="map.container">${t("map.container")}</span> ↕</th></tr></thead>
-        <tbody>${rows.map((p) => `<tr>
-          <td><b>${p.name}</b></td><td style="color:var(--text-dim)">${p.sea}</td>
-          <td>${U.fmt(p.yuk_ton)}</td><td>${U.fmt(p.konteyner_teu)}</td></tr>`).join("")}</tbody>`;
+        <tbody>${rows.map((p) => {
+          const ed = (f, l, k, w) => `data-edit='${JSON.stringify({ t: "ports", m: { name: p.name }, f: f, l: p.name + " — " + l, k: k, w: w }).replace(/'/g, "&#39;")}'`;
+          return `<tr>
+          <td><b ${ed("name", t("map.port"), "text", "Bu ad, kategori sayfalarındaki liman kırılımıyla eşleşmede kullanılıyor. Değiştirirsen o grafiklerde bu liman görünmeyebilir.")}>${p.name}</b></td>
+          <td style="color:var(--text-dim)"><span ${ed("sea", t("map.sea"), "text")}>${p.sea}</span></td>
+          <td><span ${ed("yuk_ton", t("map.cargo"), "num")}>${U.fmt(p.yuk_ton)}</span></td>
+          <td><span ${ed("konteyner_teu", t("map.container"), "num")}>${U.fmt(p.konteyner_teu)}</span></td></tr>`;
+        }).join("")}</tbody>`;
       tbl.querySelectorAll("th[data-k='yuk_ton'],th[data-k='konteyner_teu']").forEach((th) =>
         th.addEventListener("click", () => { const k = th.dataset.k; asc = k === sortKey ? !asc : false; sortKey = k; render(); }));
     }

@@ -79,6 +79,38 @@
       "footer.affiliates": "Bağlı kuruluşlar",
       "footer.dgm": "Denizcilik Genel Müdürlüğü",
       "footer.kvkk": "KVKK Dokümanları",
+
+      "month.1": "Oca", "month.2": "Şub", "month.3": "Mar", "month.4": "Nis",
+      "month.5": "May", "month.6": "Haz", "month.7": "Tem", "month.8": "Ağu",
+      "month.9": "Eyl", "month.10": "Eki", "month.11": "Kas", "month.12": "Ara",
+
+      "series.yukleme": "Yükleme", "series.bosaltma": "Boşaltma",
+      "series.turk": "Türk bayraklı", "series.yabanci": "Yabancı bayraklı",
+      "series.gelen": "Gelen", "series.giden": "Giden", "series.transit": "Transit",
+      "series.gelenArac": "Gelen araç", "series.gidenArac": "Giden araç",
+
+      "sea.marmara": "Marmara", "sea.ege": "Ege",
+      "sea.akdeniz": "Akdeniz", "sea.karadeniz": "Karadeniz",
+
+      "ui.split": "Dağılım",
+      "dim.yuk.donut": "Kargo tipine göre", "dim.yuk.bars": "En çok yük taşınan ülkeler",
+      "dim.konteyner.bars": "En çok konteyner taşınan ülkeler",
+      "dim.gemi.split": "Bayrak dağılımı", "dim.kruvaziyer.split": "Yolcu yönü",
+      "dim.roro.split": "Araç yönü", "dim.roro.bars": "Araç cinsine göre",
+      "dim.kabotaj.a": "Yolcu", "dim.kabotaj.b": "Araç",
+      "dim.filo.bars": "Gemi cinsine göre", "dim.filo.donut": "Filo bileşimi",
+
+      "nav.uab": "UAB.GOV.TR",
+      "url.uab": "https://www.uab.gov.tr",
+      "url.dgm": "https://denizcilik.uab.gov.tr/",
+      "url.kvkk": "https://www.uab.gov.tr/kvkkdokuman",
+      "url.callcenter": "https://www.uab.gov.tr/cagri-merkezi",
+      "url.contactWeb": "https://denizcilik.uab.gov.tr/",
+      "url.phone": "tel:03122031000",
+      "url.mail": "mailto:denizcilik@uab.gov.tr",
+
+      // Boş = anasayfadaki veri yılı metriklerden otomatik gelsin
+      "home.year": "",
     },
 
     en: {
@@ -154,6 +186,37 @@
       "footer.affiliates": "Affiliated institutions",
       "footer.dgm": "Directorate General of Maritime Affairs",
       "footer.kvkk": "Data Protection Documents",
+
+      "month.1": "Jan", "month.2": "Feb", "month.3": "Mar", "month.4": "Apr",
+      "month.5": "May", "month.6": "Jun", "month.7": "Jul", "month.8": "Aug",
+      "month.9": "Sep", "month.10": "Oct", "month.11": "Nov", "month.12": "Dec",
+
+      "series.yukleme": "Loading", "series.bosaltma": "Unloading",
+      "series.turk": "Turkish flag", "series.yabanci": "Foreign flag",
+      "series.gelen": "Inbound", "series.giden": "Outbound", "series.transit": "Transit",
+      "series.gelenArac": "Inbound vehicles", "series.gidenArac": "Outbound vehicles",
+
+      "sea.marmara": "Marmara", "sea.ege": "Aegean",
+      "sea.akdeniz": "Mediterranean", "sea.karadeniz": "Black Sea",
+
+      "ui.split": "Split",
+      "dim.yuk.donut": "By cargo type", "dim.yuk.bars": "Top partner countries",
+      "dim.konteyner.bars": "Top partner countries",
+      "dim.gemi.split": "Flag split", "dim.kruvaziyer.split": "Passenger direction",
+      "dim.roro.split": "Vehicle direction", "dim.roro.bars": "By vehicle type",
+      "dim.kabotaj.a": "Passengers", "dim.kabotaj.b": "Vehicles",
+      "dim.filo.bars": "By ship type", "dim.filo.donut": "Fleet composition",
+
+      "nav.uab": "UAB.GOV.TR",
+      "url.uab": "https://www.uab.gov.tr",
+      "url.dgm": "https://denizcilik.uab.gov.tr/",
+      "url.kvkk": "https://www.uab.gov.tr/kvkkdokuman",
+      "url.callcenter": "https://www.uab.gov.tr/cagri-merkezi",
+      "url.contactWeb": "https://denizcilik.uab.gov.tr/",
+      "url.phone": "tel:03122031000",
+      "url.mail": "mailto:denizcilik@uab.gov.tr",
+
+      "home.year": "",
     },
   };
 
@@ -170,7 +233,9 @@
 
   function apply(root) {
     (root || document).querySelectorAll("[data-i18n]").forEach((el) => {
-      el.textContent = t(el.dataset.i18n);
+      const v = t(el.dataset.i18n);
+      // Boş değer = "karışma": sayfanın kendi hesapladığı metin (örn. veri yılı) kalsın
+      if (v !== "") el.textContent = v;
     });
     (root || document).querySelectorAll("[data-i18n-ph]").forEach((el) => {
       el.setAttribute("placeholder", t(el.dataset.i18nPh));
@@ -178,6 +243,11 @@
     (root || document).querySelectorAll("[data-i18n-title]").forEach((el) => {
       el.setAttribute("title", t(el.dataset.i18nTitle));
       el.setAttribute("aria-label", t(el.dataset.i18nTitle));
+    });
+    // Bağlantı adresleri de içerikten gelir (panelden düzenlenebilsin)
+    (root || document).querySelectorAll("[data-i18n-href]").forEach((el) => {
+      const v = t(el.dataset.i18nHref);
+      if (v) el.setAttribute(el.tagName === "FORM" ? "action" : "href", v);
     });
     document.documentElement.lang = lang;
   }

@@ -12,13 +12,14 @@
   const nf1 = new Intl.NumberFormat(LOC, { maximumFractionDigits: 1 });
 
   // Ham sayı → "531,7 milyon" gibi vatandaş-dostu ifade
+  // uKey: büyüklük sözcüğünün içerik anahtarı — panelde düzenlenebilsin diye döner
   function human(n) {
     const a = Math.abs(n);
     const T = (k, d) => (window.t ? window.t(k) : d);
-    if (a >= 1e9) return { v: nf1.format(n / 1e9), u: T("num.milyar", "milyar") };
-    if (a >= 1e6) return { v: nf1.format(n / 1e6), u: T("num.milyon", "milyon") };
-    if (a >= 1e3) return { v: nf0.format(n / 1e3), u: T("num.bin", "bin") };
-    return { v: nf0.format(n), u: "" };
+    if (a >= 1e9) return { v: nf1.format(n / 1e9), u: T("num.milyar", "milyar"), uKey: "num.milyar" };
+    if (a >= 1e6) return { v: nf1.format(n / 1e6), u: T("num.milyon", "milyon"), uKey: "num.milyon" };
+    if (a >= 1e3) return { v: nf0.format(n / 1e3), u: T("num.bin", "bin"), uKey: "num.bin" };
+    return { v: nf0.format(n), u: "", uKey: null };
   }
   function fmt(n) { return nf0.format(n); }
 

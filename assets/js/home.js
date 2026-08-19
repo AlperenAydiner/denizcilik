@@ -31,21 +31,25 @@
       labelKey: "kpi.filo", trendKey: null },
   ];
 
+  const ed = (o) => `data-edit='${JSON.stringify(o).replace(/'/g, "&#39;")}'`;
+
   function card(k) {
     const m = H[k.key];
     const hv = U.human(m.deger);
     const hasYoy = typeof m.yoy === "number";
     const up = m.yoy >= 0;
+    const lbl = t(k.labelKey);
     const delta = hasYoy
-      ? `<span class="kpi-delta ${up ? "up" : "down"}">${up ? arrow("up") : arrow("down")} %${Math.abs(m.yoy).toString().replace(".", ",")}</span>`
-      : `<span class="kpi-year">${m.yil}</span>`;
+      ? `<span class="kpi-delta ${up ? "up" : "down"}" ${ed({ t: "metrics", m: { key: k.key }, f: "yoy", l: lbl + " — geçen yıla göre % değişim", k: "num" })}>${up ? arrow("up") : arrow("down")} %${Math.abs(m.yoy).toString().replace(".", ",")}</span>`
+      : `<span class="kpi-year" ${ed({ t: "metrics", m: { key: k.key }, f: "year", l: lbl + " — veri yılı", k: "num" })}>${m.yil}</span>`;
+    const mag = hv.uKey ? `<span data-i18n="${hv.uKey}">${hv.u}</span> ` : "";
     return `<a class="kpi-card reveal" href="${k.href}" style="--kc:var(${k.c})">
       <div class="kpi-top">
         <span class="kpi-ic">${icon(k.ic)}</span>
-        <span class="kpi-label" data-i18n="${k.labelKey}">${t(k.labelKey)}</span>
+        <span class="kpi-label" data-i18n="${k.labelKey}">${lbl}</span>
         ${delta}
       </div>
-      <div class="kpi-num"><span data-count="${hv.v.replace(",", ".")}" data-dec="${hv.v.includes(",") ? 1 : 0}" data-metric-key="${k.key}">${hv.v}</span><span class="kpi-unit">${hv.u} <span data-i18n="${k.unitKey}">${t(k.unitKey)}</span></span></div>
+      <div class="kpi-num"><span data-count="${hv.v.replace(",", ".")}" data-dec="${hv.v.includes(",") ? 1 : 0}" data-metric-key="${k.key}">${hv.v}</span><span class="kpi-unit">${mag}<span data-i18n="${k.unitKey}">${t(k.unitKey)}</span></span></div>
       <div class="kpi-spark" id="spark-${k.key}"></div>
 
       <span class="kpi-go"><span data-i18n="ui.detail">${t("ui.detail")}</span> ${arrow("right")}</span>
@@ -72,9 +76,9 @@
   function start() {
     H = window.MARITIME_DATA.headline;
     T = window.MARITIME_DATA.trend;
-    // Veri yılı metriklerden gelsin — elle yazılan yıl veri ilerleyince eskiyordu
+    // Veri yılı: panelde "home.year" doldurulduysa o, boşsa metriklerin en güncel yılı
     const ye = document.getElementById("dashYear");
-    if (ye) {
+    if (ye && !String(t("home.year") || "").trim()) {
       const yrs = Object.values(H).map((x) => x && x.yil).filter(Boolean);
       if (yrs.length) ye.textContent = Math.max.apply(null, yrs);
     }

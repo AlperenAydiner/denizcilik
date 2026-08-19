@@ -33,7 +33,7 @@
   <div class="topbar"><div class="wrap">
     <span class="topbar-org" data-i18n="site.org">${t("site.org")}</span>
     <div class="links">
-      <a href="https://www.uab.gov.tr" target="_blank" rel="noopener">UAB.GOV.TR</a>
+      <a href="${t("url.uab")}" target="_blank" rel="noopener" data-i18n="nav.uab" data-i18n-href="url.uab">${t("nav.uab")}</a>
       <a href="site-haritasi.html" data-i18n="nav.sitemap">${t("nav.sitemap")}</a>
       <a href="iletisim.html" data-i18n="nav.contact">${t("nav.contact")}</a>
       <button class="lang-btn" id="langBtn" type="button">${ICON.globe}<span data-i18n="ui.lang">${t("ui.lang")}</span></button>
@@ -86,23 +86,23 @@
           </div>
           <div class="fi-item">
             <span class="fi-ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .3 1.9.6 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.1a2 2 0 012.1-.5c.9.3 1.8.5 2.8.6a2 2 0 011.7 2z"/></svg></span>
-            <span class="fi-tx"><b data-i18n="contact.phone">${t("contact.phone")}</b><a href="tel:03122031000" data-i18n="contact.phoneValue">${t("contact.phoneValue")}</a></span>
+            <span class="fi-tx"><b data-i18n="contact.phone">${t("contact.phone")}</b><a href="${t("url.phone")}" data-i18n="contact.phoneValue" data-i18n-href="url.phone">${t("contact.phoneValue")}</a></span>
           </div>
           <div class="fi-item">
             <span class="fi-ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 12a8 8 0 1116 0v5a2 2 0 01-2 2h-2v-6h4M4 13h4v6H6a2 2 0 01-2-2z"/></svg></span>
-            <span class="fi-tx"><b data-i18n="contact.callcenter">${t("contact.callcenter")}</b><a href="https://www.uab.gov.tr/cagri-merkezi" target="_blank" rel="noopener" data-i18n="contact.callcenterValue">${t("contact.callcenterValue")}</a></span>
+            <span class="fi-tx"><b data-i18n="contact.callcenter">${t("contact.callcenter")}</b><a href="${t("url.callcenter")}" target="_blank" rel="noopener" data-i18n="contact.callcenterValue" data-i18n-href="url.callcenter">${t("contact.callcenterValue")}</a></span>
           </div>
         </div>
 
         <nav class="footer-links" aria-label="${t("footer.corp")}">
           <a href="index.html" data-i18n="nav.home">${t("nav.home")}</a>
-          <a href="https://denizcilik.uab.gov.tr/" target="_blank" rel="noopener" data-i18n="footer.dgm">${t("footer.dgm")}</a>
+          <a href="${t("url.dgm")}" target="_blank" rel="noopener" data-i18n="footer.dgm" data-i18n-href="url.dgm">${t("footer.dgm")}</a>
           <a href="dosyalar.html" data-i18n="nav.dosyalar">${t("nav.dosyalar")}</a>
           <a href="harita.html" data-i18n="nav.map">${t("nav.map")}</a>
           <a href="diger-istatistikler.html" data-i18n="nav.other">${t("nav.other")}</a>
           <a href="iletisim.html" data-i18n="nav.contact">${t("nav.contact")}</a>
           <a href="site-haritasi.html" data-i18n="nav.sitemap">${t("nav.sitemap")}</a>
-          <a href="https://www.uab.gov.tr/kvkkdokuman" target="_blank" rel="noopener" data-i18n="footer.kvkk">${t("footer.kvkk")}</a>
+          <a href="${t("url.kvkk")}" target="_blank" rel="noopener" data-i18n="footer.kvkk" data-i18n-href="url.kvkk">${t("footer.kvkk")}</a>
         </nav>
       </div>
 

@@ -50,13 +50,40 @@ html.md-edit-shell .cat-filters { top: calc(116px + var(--md-bar-h)); }
 
 /* ---------- Düzenlenebilir alanlar ---------- */
 html.md-edit-mode [data-i18n],
-html.md-edit-mode [data-metric-key] {
+html.md-edit-mode [data-i18n-href],
+html.md-edit-mode [data-metric-key],
+html.md-edit-mode [data-derived] {
   outline: 1.5px dashed color-mix(in srgb, var(--accent) 70%, transparent);
   outline-offset: 3px; border-radius: 3px; cursor: pointer;
   transition: outline-color .15s, background .15s;
 }
 html.md-edit-mode [data-i18n]:hover,
-html.md-edit-mode [data-metric-key]:hover {
+html.md-edit-mode [data-i18n-href]:hover,
+html.md-edit-mode [data-metric-key]:hover,
+html.md-edit-mode [data-derived]:hover {
+  outline-style: solid; outline-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+/* Hesaplanan sayı düzenlenebilir değil — farklı (soluk) işaret */
+html.md-edit-mode [data-derived] {
+  outline-style: dotted; outline-color: var(--text-dim);
+}
+
+/* Grafik içindeki sütun/dilim/nokta (SVG) */
+html.md-edit-mode [data-edit] { cursor: pointer; }
+html.md-edit-mode svg [data-edit] {
+  stroke: color-mix(in srgb, var(--accent) 55%, transparent); stroke-width: 1.5;
+  stroke-dasharray: 3 2; transition: stroke .15s, filter .15s;
+}
+html.md-edit-mode svg [data-edit]:hover {
+  stroke: var(--accent); stroke-width: 2.5; stroke-dasharray: none; filter: brightness(1.15);
+}
+/* Tablo hücresi gibi HTML data-edit alanları metinlerle aynı görünsün */
+html.md-edit-mode span[data-edit], html.md-edit-mode b[data-edit], html.md-edit-mode td[data-edit] {
+  outline: 1.5px dashed color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 3px; border-radius: 3px;
+}
+html.md-edit-mode span[data-edit]:hover, html.md-edit-mode b[data-edit]:hover, html.md-edit-mode td[data-edit]:hover {
   outline-style: solid; outline-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 16%, transparent);
 }
@@ -86,6 +113,13 @@ html.md-edit-mode [data-metric-key]:hover {
   font: inherit; font-size: 0.92rem; transition: border-color .2s;
 }
 .md-edit-pop textarea:focus, .md-edit-pop input:focus { outline: none; border-color: var(--accent); }
+.mep-note {
+  margin: 10px 0 0; font-size: 0.78rem; line-height: 1.5; color: var(--text-dim);
+  background: var(--surface-2); border-radius: 9px; padding: 9px 11px;
+}
+.mep-note.warn {
+  color: #b83f5e; background: rgba(184, 63, 94, 0.1); border: 1px solid rgba(184, 63, 94, 0.28);
+}
 .mep-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 .mep-actions .btn { padding: 9px 16px; font-size: 0.85rem; }
 
