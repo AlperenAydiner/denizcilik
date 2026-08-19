@@ -9,7 +9,15 @@
 .admin-hint { font-size: 0.82rem; color: var(--text-dim); font-weight: 400; }
 
 .admin-msg { margin-top: 10px; font-size: 0.88rem; color: var(--text-soft); }
-.admin-msg.err { color: #c0455e; }
+.admin-msg.err, .err { color: #b83f5e; }
+
+/* Sitedeki .field input ile aynı görünüm — dropdown'lar da form alanlarıyla eşleşsin */
+.field select {
+  width: 100%; padding: 13px 15px; border-radius: 12px;
+  background: var(--navy-900); border: 1px solid var(--border); color: var(--text);
+  font: inherit; font-size: 0.95rem; cursor: pointer; transition: border-color 0.2s;
+}
+.field select:focus { outline: none; border-color: var(--accent); }
 
 .admin-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .admin-topbar span { color: var(--text-soft); font-size: 0.92rem; }
@@ -35,18 +43,20 @@
 }
 .admin-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
 .admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: var(--surface-2); }
 .admin-table input {
-  width: 100%; min-width: 70px; padding: 7px 9px; border-radius: 7px;
-  background: var(--bg-alt); border: 1px solid var(--border); color: var(--text); font: inherit; font-size: 0.85rem;
+  width: 100%; min-width: 70px; padding: 8px 10px; border-radius: 10px;
+  background: var(--navy-900); border: 1px solid var(--border); color: var(--text); font: inherit; font-size: 0.85rem;
+  transition: border-color 0.2s;
 }
 .admin-table input:focus { outline: none; border-color: var(--accent); }
 .admin-rowactions { display: flex; gap: 4px; white-space: nowrap; }
 .admin-rowactions button {
-  width: 30px; height: 30px; border-radius: 7px; display: grid; place-items: center;
+  width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
   background: var(--surface-2); border: 1px solid var(--border); color: var(--text-soft); transition: .15s;
 }
 .ic-save:hover { color: #2f9d62; border-color: #2f9d62; }
-.ic-del:hover { color: #c0455e; border-color: #c0455e; }
+.ic-del:hover { color: #b83f5e; border-color: #b83f5e; }
 
 .admin-addrow { margin-top: 12px; }
 
@@ -54,7 +64,7 @@
   padding: 9px 14px; border-radius: 9px; font-size: 0.84rem; margin-bottom: 14px;
   background: rgba(47,157,98,0.12); color: #2f9d62; border: 1px solid rgba(47,157,98,0.3);
 }
-.admin-toast.err { background: rgba(192,69,94,0.1); color: #c0455e; border-color: rgba(192,69,94,0.3); }
+.admin-toast.err { background: rgba(184,63,94,0.1); color: #b83f5e; border-color: rgba(184,63,94,0.3); }
 
 @media (max-width: 700px) {
   .admin-filters { flex-direction: column; align-items: stretch; }
