@@ -174,6 +174,13 @@
       location.reload();
     },
     toggle() { this.set(lang === "tr" ? "en" : "tr"); },
+    // Düzenleme modu için: bir anahtarın ham TR/EN metnini döndürür (görüntülenen dilden bağımsız)
+    raw: (key) => ({ tr: DICT.tr[key] != null ? DICT.tr[key] : "", en: DICT.en[key] != null ? DICT.en[key] : "" }),
+    // Düzenleme modu için: kaydedilen değeri sözlüğe yazar ve sayfayı yeniden boyar
+    setRaw(key, tr, en) {
+      DICT.tr[key] = tr; DICT.en[key] = en;
+      apply();
+    },
   };
   window.t = t;
 

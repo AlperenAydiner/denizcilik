@@ -30,14 +30,14 @@
   host.innerHTML = `
     <div class="archive-bar">
       <div class="archive-tabs" id="fTabs">
-        ${keys.map((k) => `<button data-k="${k}" class="${k === active ? "on" : ""}">${label(k)}<span>${count(k)}</span></button>`).join("")}
+        ${keys.map((k) => `<button data-k="${k}" class="${k === active ? "on" : ""}">${NAMES[k] ? `<span data-i18n="${NAMES[k]}">${label(k)}</span>` : label(k)}<span>${count(k)}</span></button>`).join("")}
       </div>
       <div class="archive-search">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
         <input type="search" id="fQ" placeholder="${t("ui.search")}" aria-label="${t("ui.search")}">
       </div>
     </div>
-    <div class="archive-total">${t("files.total")} <b>${total.toLocaleString(loc)}</b> ${t("files.totalSuffix")}</div>
+    <div class="archive-total"><span data-i18n="files.total">${t("files.total")}</span> <b>${total.toLocaleString(loc)}</b> <span data-i18n="files.totalSuffix">${t("files.totalSuffix")}</span></div>
     <div id="fBody"></div>`;
 
   function render() {
@@ -56,14 +56,14 @@
       if (!files.length) return;
       shown += files.length;
       html += `<details class="arch-year" ${q || i < 2 ? "open" : ""}>
-        <summary><span class="yr">${y}</span><span class="cnt">${files.length} ${t("ui.files")}</span>
+        <summary><span class="yr">${y}</span><span class="cnt">${files.length} <span data-i18n="ui.files">${t("ui.files")}</span></span>
           <svg class="chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
         <ul class="arch-files">${files.map((f) =>
           `<li><a href="${f.url}" target="_blank" rel="noopener">${fileIcon}<span>${f.ad}</span><em>XLS</em></a></li>`).join("")}</ul>
       </details>`;
     });
     document.getElementById("fBody").innerHTML =
-      shown ? html : `<div class="arch-empty">${t("ui.notFound")}</div>`;
+      shown ? html : `<div class="arch-empty" data-i18n="ui.notFound">${t("ui.notFound")}</div>`;
   }
 
   document.getElementById("fTabs").addEventListener("click", (e) => {

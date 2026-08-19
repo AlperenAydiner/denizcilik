@@ -107,10 +107,10 @@
   function skeleton() {
     host.innerHTML = `
     <section class="page-hero"><div class="wrap">
-      <div class="breadcrumb"><a href="index.html">${t("nav.home")}</a> ${arrow("right")} <span>${t("cat." + cat)}</span></div>
+      <div class="breadcrumb"><a href="index.html" data-i18n="nav.home">${t("nav.home")}</a> ${arrow("right")} <span data-i18n="cat.${cat}">${t("cat." + cat)}</span></div>
       <div class="page-title">
         <span class="page-icon" style="color:${accent}">${icon(cfg.ic)}</span>
-        <h1>${t("cat." + cat)}</h1>
+        <h1 data-i18n="cat.${cat}">${t("cat." + cat)}</h1>
       </div>
     </div></section>
     <section class="cat-wrap"><div class="wrap">
@@ -126,40 +126,40 @@
   function renderFilters() {
     const box = document.getElementById("catFilters");
     const avail = monthsFor(state.year);
-    let h = `<div class="filter-head">${icon(cfg.ic)} <span>${t("ui.filter")}</span></div>`;
+    let h = `<div class="filter-head">${icon(cfg.ic)} <span data-i18n="ui.filter">${t("ui.filter")}</span></div>`;
 
-    h += `<div class="filter-group"><label for="fYear">${t("ui.year")}</label>
+    h += `<div class="filter-group"><label for="fYear" data-i18n="ui.year">${t("ui.year")}</label>
       <select class="filter-select" id="fYear">
         ${years.map((y) => `<option value="${y}"${y === state.year ? " selected" : ""}>${y}</option>`).join("")}
       </select></div>`;
 
     if (avail.length) {
       h += `<div class="filter-group">
-        <label>${t("ui.month")}<span class="filter-actions">
-          <button type="button" data-mall>${t("ui.all")}</button>
-          <button type="button" data-mnone>${t("ui.clear")}</button></span></label>
+        <label><span data-i18n="ui.month">${t("ui.month")}</span><span class="filter-actions">
+          <button type="button" data-mall data-i18n="ui.all">${t("ui.all")}</button>
+          <button type="button" data-mnone data-i18n="ui.clear">${t("ui.clear")}</button></span></label>
         <div class="filter-months">${avail.map((mo) =>
           `<button type="button" data-month="${mo}" class="${state.months.includes(mo) ? "on" : ""}">${MON()[mo - 1]}</button>`).join("")}</div>
-        <div class="filter-note">${state.months.length}/${avail.length} ${t("ui.monthSelected")}</div>
+        <div class="filter-note">${state.months.length}/${avail.length} <span data-i18n="ui.monthSelected">${t("ui.monthSelected")}</span></div>
       </div>`;
     }
 
     if (cfg.series.length) {
-      h += `<div class="filter-group"><label>${t("ui.series")}</label><div class="filter-regions">
-        <button type="button" data-seri="toplam" class="${state.seri === "toplam" ? "on" : ""}">${t("ui.total")}</button>
+      h += `<div class="filter-group"><label data-i18n="ui.series">${t("ui.series")}</label><div class="filter-regions">
+        <button type="button" data-seri="toplam" class="${state.seri === "toplam" ? "on" : ""}" data-i18n="ui.total">${t("ui.total")}</button>
         ${cfg.series.map((s) => `<button type="button" data-seri="${s.k}" class="${state.seri === s.k ? "on" : ""}">${nm(s)}</button>`).join("")}
       </div></div>`;
     }
 
     if (pRows().length) {
       const SEAS = ["Marmara", "Ege", "Akdeniz", "Karadeniz"];
-      h += `<div class="filter-group"><label>${t("ui.region")}</label><div class="filter-regions">
-        <button type="button" data-region="all" class="${state.region === "all" ? "on" : ""}">${t("ui.all")}</button>
+      h += `<div class="filter-group"><label data-i18n="ui.region">${t("ui.region")}</label><div class="filter-regions">
+        <button type="button" data-region="all" class="${state.region === "all" ? "on" : ""}" data-i18n="ui.all">${t("ui.all")}</button>
         ${SEAS.map((s) => `<button type="button" data-region="${s}" class="${state.region === s ? "on" : ""}">${s}</button>`).join("")}
       </div></div>`;
     }
 
-    h += `<a class="btn btn-ghost filter-src" href="dosyalar.html?kat=${cfg.arch}">${t("ui.viewFiles")} ${arrow("right")}</a>`;
+    h += `<a class="btn btn-ghost filter-src" href="dosyalar.html?kat=${cfg.arch}"><span data-i18n="ui.viewFiles">${t("ui.viewFiles")}</span> ${arrow("right")}</a>`;
     box.innerHTML = h;
 
     box.querySelector("#fYear").addEventListener("change", (e) => {
@@ -219,13 +219,13 @@
       <div class="ds-sub">${sub}${partial ? " · " + t("ui.partial") : ""}</div>
     </div>`;
 
-    const card = (id, title, s2) =>
-      `<div class="dash-card"><h3>${title}</h3>${s2 ? `<p class="csub">${s2}</p>` : ""}<div class="chart-holder" id="${id}"></div></div>`;
+    const card = (id, title, s2, key) =>
+      `<div class="dash-card"><h3${key ? ` data-i18n="${key}"` : ""}>${title}</h3>${s2 ? `<p class="csub">${s2}</p>` : ""}<div class="chart-holder" id="${id}"></div></div>`;
 
     let cards = "";
-    if (avail.length) cards += card("dMonth", t("cat.monthTitle"), `${state.year} · ${unit}`);
-    if (catTrend()) cards += card("dTrend", t("cat.trendTitle"), unit);
-    if (cfg.dual) cards += card("dDual", t("cat.trendTitle"), "");
+    if (avail.length) cards += card("dMonth", t("cat.monthTitle"), `${state.year} · ${unit}`, "cat.monthTitle");
+    if (catTrend()) cards += card("dTrend", t("cat.trendTitle"), unit, "cat.trendTitle");
+    if (cfg.dual) cards += card("dDual", t("cat.trendTitle"), "", "cat.trendTitle");
     if (pRows().length) cards += card("dPorts", t("cat.portsTitle") + (state.region !== "all" ? " — " + state.region : ""), `${state.year} · ${unit}`);
     if (cfg.split && cfg.series.length > 1)
       cards += card("dSplit", lang() === "en" ? (cfg.splitTitleEn || "Split") : (cfg.splitTitleTr || "Dağılım"), String(state.year));
@@ -281,7 +281,7 @@
       }
       const top = rows.sort((a, b) => b.deger - a.deger).slice(0, 10);
       if (top.length) C.bars(ph, { unit, items: top.map((r) => ({ label: r.liman, value: r.deger, color: accent })) });
-      else ph.innerHTML = `<p class="csub">${t("cat.noPortData")}</p>`;
+      else ph.innerHTML = `<p class="csub" data-i18n="cat.noPortData">${t("cat.noPortData")}</p>`;
     }
 
     const sh = document.getElementById("dSplit");
@@ -325,7 +325,7 @@
     const total = Object.values(a.yillar).reduce((s, v) => s + v.length, 0);
     box.innerHTML = `<a class="files-cta" href="dosyalar.html?kat=${cfg.arch}">
       <span class="fc-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 3v5h5M7 3h8l5 5v11a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/></svg></span>
-      <span class="fc-tx"><b>${t("ui.viewFiles")}</b><span>${total.toLocaleString(loc)} ${t("ui.files")}</span></span>
+      <span class="fc-tx"><b data-i18n="ui.viewFiles">${t("ui.viewFiles")}</b><span>${total.toLocaleString(loc)} <span data-i18n="ui.files">${t("ui.files")}</span></span></span>
       ${arrow("right")}</a>`;
   }
 

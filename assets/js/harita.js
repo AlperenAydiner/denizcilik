@@ -14,15 +14,15 @@
   D = window.MARITIME_DATA; P = D.ports;
   host.innerHTML = `
     <section class="page-hero"><div class="wrap">
-      <div class="breadcrumb reveal"><a href="index.html">${t("nav.home")}</a> ${window.__arrow("right")} <span>${t("nav.map")}</span></div>
-      <h1 class="reveal">${t("map.title")}</h1>
-      <p class="intro reveal d1">${t("map.lead")}</p>
+      <div class="breadcrumb reveal"><a href="index.html" data-i18n="nav.home">${t("nav.home")}</a> ${window.__arrow("right")} <span data-i18n="nav.map">${t("nav.map")}</span></div>
+      <h1 class="reveal" data-i18n="map.title">${t("map.title")}</h1>
+      <p class="intro reveal d1" data-i18n="map.lead">${t("map.lead")}</p>
     </div></section>
     <section class="section" style="padding-top:10px"><div class="wrap">
       <div class="reveal mapviz" id="haritaMap"></div>
     </div></section>
     <section class="section" style="padding-top:0"><div class="wrap">
-      <div class="section-head reveal"><h2>${t("map.table")}</h2></div>
+      <div class="section-head reveal"><h2 data-i18n="map.table">${t("map.table")}</h2></div>
       <div class="chart-card reveal" style="padding:0;overflow:hidden">
         <div class="table-scroll"><table class="data-table" id="portsTable"></table></div>
       </div>
@@ -35,8 +35,8 @@
     const frame = document.createElement("div"); frame.className = "frame";
     const tip = document.createElement("div"); tip.className = "map-tooltip";
     frame.innerHTML = `<div class="controls">
-        <button data-mode="yuk_ton" class="on">${t("map.cargo")}</button>
-        <button data-mode="konteyner_teu">${t("map.container")}</button></div>`;
+        <button data-mode="yuk_ton" class="on" data-i18n="map.cargo">${t("map.cargo")}</button>
+        <button data-mode="konteyner_teu" data-i18n="map.container">${t("map.container")}</button></div>`;
     const sv = document.createElement("div"); frame.appendChild(sv); frame.appendChild(tip); wrap.appendChild(frame);
     function draw() {
       const vals = P.map((p) => p[mode]).filter((v) => v > 0), max = Math.max(...vals);
@@ -73,9 +73,9 @@
     function render() {
       const rows = [...P].sort((a, b) => (asc ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey]));
       tbl.innerHTML = `<thead><tr>
-        <th data-k="name">${t("map.port")}</th><th data-k="sea">${t("map.sea")}</th>
-        <th data-k="yuk_ton" style="cursor:pointer">${t("map.cargo")} ↕</th>
-        <th data-k="konteyner_teu" style="cursor:pointer">${t("map.container")} ↕</th></tr></thead>
+        <th data-k="name" data-i18n="map.port">${t("map.port")}</th><th data-k="sea" data-i18n="map.sea">${t("map.sea")}</th>
+        <th data-k="yuk_ton" style="cursor:pointer"><span data-i18n="map.cargo">${t("map.cargo")}</span> ↕</th>
+        <th data-k="konteyner_teu" style="cursor:pointer"><span data-i18n="map.container">${t("map.container")}</span> ↕</th></tr></thead>
         <tbody>${rows.map((p) => `<tr>
           <td><b>${p.name}</b></td><td style="color:var(--text-dim)">${p.sea}</td>
           <td>${U.fmt(p.yuk_ton)}</td><td>${U.fmt(p.konteyner_teu)}</td></tr>`).join("")}</tbody>`;

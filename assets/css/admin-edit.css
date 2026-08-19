@@ -1,0 +1,51 @@
+/* ============================================================
+   admin-edit.css — Site içi düzenleme modu (yalnız giriş yapmış admin görür)
+   ============================================================ */
+#mdEditToggle {
+  position: fixed; right: 22px; bottom: 22px; z-index: 90;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 18px; border-radius: 999px; font-weight: 600; font-size: 0.86rem;
+  background: var(--surface); color: var(--text); border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow); transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+#mdEditToggle:hover { transform: translateY(-2px); }
+#mdEditToggle.on { background: var(--sea-500); color: #fff; border-color: var(--sea-500); }
+
+html.md-edit-mode [data-i18n], html.md-edit-mode [data-metric-key] {
+  outline: 1.5px dashed var(--accent); outline-offset: 3px; border-radius: 4px;
+  cursor: pointer; transition: background 0.15s;
+}
+html.md-edit-mode [data-i18n]:hover, html.md-edit-mode [data-metric-key]:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.md-edit-pop {
+  position: absolute; z-index: 95; width: min(360px, 88vw);
+  background: var(--surface); border: 1px solid var(--border-strong); border-radius: 14px;
+  box-shadow: var(--shadow); padding: 16px;
+}
+.mep-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.mep-head b { font-family: var(--font-display); font-size: 0.88rem; color: var(--white); word-break: break-all; }
+.mep-head button { color: var(--text-dim); background: none; border: none; padding: 2px; }
+.mep-head button:hover { color: var(--white); }
+.md-edit-pop label { display: block; font-size: 0.78rem; color: var(--text-dim); margin: 8px 0 5px; }
+.md-edit-pop textarea, .md-edit-pop input {
+  width: 100%; padding: 10px 12px; border-radius: 10px; resize: vertical;
+  background: var(--navy-900); border: 1px solid var(--border); color: var(--text); font: inherit; font-size: 0.9rem;
+}
+.md-edit-pop textarea:focus, .md-edit-pop input:focus { outline: none; border-color: var(--accent); }
+.mep-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.mep-actions .btn { padding: 8px 14px; font-size: 0.84rem; }
+
+#mdEditToast {
+  position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 99;
+  padding: 11px 18px; border-radius: 10px; font-size: 0.86rem; font-weight: 600;
+  background: rgba(47,157,98,0.14); color: #2f9d62; border: 1px solid rgba(47,157,98,0.35);
+  box-shadow: var(--shadow);
+}
+#mdEditToast.err { background: rgba(184,63,94,0.12); color: #b83f5e; border-color: rgba(184,63,94,0.35); }
+
+@media (max-width: 640px) {
+  #mdEditToggle span { display: none; }
+  #mdEditToggle { padding: 12px; }
+}

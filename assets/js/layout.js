@@ -31,12 +31,12 @@
 
   const header = `
   <div class="topbar"><div class="wrap">
-    <span class="topbar-org">${t("site.org")}</span>
+    <span class="topbar-org" data-i18n="site.org">${t("site.org")}</span>
     <div class="links">
       <a href="https://www.uab.gov.tr" target="_blank" rel="noopener">UAB.GOV.TR</a>
-      <a href="site-haritasi.html">${t("nav.sitemap")}</a>
-      <a href="iletisim.html">${t("nav.contact")}</a>
-      <button class="lang-btn" id="langBtn" type="button">${ICON.globe}<span>${t("ui.lang")}</span></button>
+      <a href="site-haritasi.html" data-i18n="nav.sitemap">${t("nav.sitemap")}</a>
+      <a href="iletisim.html" data-i18n="nav.contact">${t("nav.contact")}</a>
+      <button class="lang-btn" id="langBtn" type="button">${ICON.globe}<span data-i18n="ui.lang">${t("ui.lang")}</span></button>
     </div>
   </div></div>
   <header class="site-header">
@@ -44,11 +44,11 @@
       <a class="brand" href="index.html" aria-label="${t("nav.home")}">
         <span class="brand-mark"><img class="brand-logo" src="assets/img/uab-logo.svg" alt="${t("site.org")}" width="176" height="57"></span>
         <span class="brand-divider"></span>
-        <span class="brand-sub">${t("site.sub1")}<br><b>${t("site.sub2")}</b></span>
+        <span class="brand-sub"><span data-i18n="site.sub1">${t("site.sub1")}</span><br><b data-i18n="site.sub2">${t("site.sub2")}</b></span>
       </a>
       <nav class="primary-nav" id="primaryNav" aria-label="${t("ui.menu")}">
         <ul class="mainmenu">
-          ${NAV.map((n) => `<li><a href="${n.href}">${t(n.k)}</a></li>`).join("")}
+          ${NAV.map((n) => `<li><a href="${n.href}" data-i18n="${n.k}">${t(n.k)}</a></li>`).join("")}
         </ul>
       </nav>
       <div class="nav-actions">
@@ -76,38 +76,38 @@
       <div class="footer-main">
         <div class="footer-brand">
           <span class="brand-mark footer-mark"><img class="footer-logo" src="assets/img/uab-logo.svg" alt="${t("site.org")}" width="190" height="61" loading="lazy"></span>
-          <p class="footer-org">${t("site.org")}<br><b>${t("site.sub1")} ${t("site.sub2")}</b></p>
+          <p class="footer-org"><span data-i18n="site.org">${t("site.org")}</span><br><b><span data-i18n="site.sub1">${t("site.sub1")}</span> <span data-i18n="site.sub2">${t("site.sub2")}</span></b></p>
         </div>
 
         <div class="footer-info">
           <div class="fi-item">
             <span class="fi-ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21s7-5.5 7-11a7 7 0 10-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
-            <span class="fi-tx"><b>${t("contact.address")}</b>Hakkı Turayliç Cad. No:5<br>06338 Emek / Ankara</span>
+            <span class="fi-tx"><b data-i18n="contact.address">${t("contact.address")}</b>Hakkı Turayliç Cad. No:5<br>06338 Emek / Ankara</span>
           </div>
           <div class="fi-item">
             <span class="fi-ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .3 1.9.6 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.1a2 2 0 012.1-.5c.9.3 1.8.5 2.8.6a2 2 0 011.7 2z"/></svg></span>
-            <span class="fi-tx"><b>${t("contact.phone")}</b><a href="tel:03122031000">0312 203 10 00</a></span>
+            <span class="fi-tx"><b data-i18n="contact.phone">${t("contact.phone")}</b><a href="tel:03122031000">0312 203 10 00</a></span>
           </div>
           <div class="fi-item">
             <span class="fi-ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 12a8 8 0 1116 0v5a2 2 0 01-2 2h-2v-6h4M4 13h4v6H6a2 2 0 01-2-2z"/></svg></span>
-            <span class="fi-tx"><b>${t("contact.callcenter")}</b><a href="https://www.uab.gov.tr/cagri-merkezi" target="_blank" rel="noopener">ALO 123</a></span>
+            <span class="fi-tx"><b data-i18n="contact.callcenter">${t("contact.callcenter")}</b><a href="https://www.uab.gov.tr/cagri-merkezi" target="_blank" rel="noopener">ALO 123</a></span>
           </div>
         </div>
 
         <nav class="footer-links" aria-label="${t("footer.corp")}">
-          <a href="index.html">${t("nav.home")}</a>
-          <a href="https://denizcilik.uab.gov.tr/" target="_blank" rel="noopener">${t("footer.dgm")}</a>
-          <a href="dosyalar.html">${t("nav.dosyalar")}</a>
-          <a href="harita.html">${t("nav.map")}</a>
-          <a href="diger-istatistikler.html">${t("nav.other")}</a>
-          <a href="iletisim.html">${t("nav.contact")}</a>
-          <a href="site-haritasi.html">${t("nav.sitemap")}</a>
-          <a href="https://www.uab.gov.tr/kvkkdokuman" target="_blank" rel="noopener">${t("footer.kvkk")}</a>
+          <a href="index.html" data-i18n="nav.home">${t("nav.home")}</a>
+          <a href="https://denizcilik.uab.gov.tr/" target="_blank" rel="noopener" data-i18n="footer.dgm">${t("footer.dgm")}</a>
+          <a href="dosyalar.html" data-i18n="nav.dosyalar">${t("nav.dosyalar")}</a>
+          <a href="harita.html" data-i18n="nav.map">${t("nav.map")}</a>
+          <a href="diger-istatistikler.html" data-i18n="nav.other">${t("nav.other")}</a>
+          <a href="iletisim.html" data-i18n="nav.contact">${t("nav.contact")}</a>
+          <a href="site-haritasi.html" data-i18n="nav.sitemap">${t("nav.sitemap")}</a>
+          <a href="https://www.uab.gov.tr/kvkkdokuman" target="_blank" rel="noopener" data-i18n="footer.kvkk">${t("footer.kvkk")}</a>
         </nav>
       </div>
 
       <div class="footer-bottom">
-        <span>© <span data-year-now>2026</span> ${t("site.org")} — ${t("footer.rights")}</span>
+        <span>© <span data-year-now>2026</span> <span data-i18n="site.org">${t("site.org")}</span> — <span data-i18n="footer.rights">${t("footer.rights")}</span></span>
       </div>
     </div>
   </footer>`;
@@ -173,4 +173,16 @@
   document.querySelectorAll(".mainmenu > li > a").forEach((a) => {
     if (a.getAttribute("href") === path) a.parentElement.classList.add("active");
   });
+
+  /* ---------- Site içi düzenleme modu ----------
+     admin.html hariç her sayfada yüklenir; giriş yapılmamışsa admin-edit.js
+     kendi kendine sessiz kalır (hiçbir görünür etkisi olmaz). */
+  if (path !== "admin.html") {
+    const editCss = document.createElement("link");
+    editCss.rel = "stylesheet"; editCss.href = "assets/css/admin-edit.css";
+    document.head.appendChild(editCss);
+    const editJs = document.createElement("script");
+    editJs.src = "assets/js/admin-edit.js"; editJs.defer = true;
+    document.body.appendChild(editJs);
+  }
 })();

@@ -42,13 +42,13 @@
     return `<a class="kpi-card reveal" href="${k.href}" style="--kc:var(${k.c})">
       <div class="kpi-top">
         <span class="kpi-ic">${icon(k.ic)}</span>
-        <span class="kpi-label">${t(k.labelKey)}</span>
+        <span class="kpi-label" data-i18n="${k.labelKey}">${t(k.labelKey)}</span>
         ${delta}
       </div>
-      <div class="kpi-num"><span data-count="${hv.v.replace(",", ".")}" data-dec="${hv.v.includes(",") ? 1 : 0}">${hv.v}</span><span class="kpi-unit">${hv.u} ${t(k.unitKey)}</span></div>
+      <div class="kpi-num"><span data-count="${hv.v.replace(",", ".")}" data-dec="${hv.v.includes(",") ? 1 : 0}" data-metric-key="${k.key}">${hv.v}</span><span class="kpi-unit">${hv.u} <span data-i18n="${k.unitKey}">${t(k.unitKey)}</span></span></div>
       <div class="kpi-spark" id="spark-${k.key}"></div>
-      
-      <span class="kpi-go">${t("ui.detail")} ${arrow("right")}</span>
+
+      <span class="kpi-go"><span data-i18n="ui.detail">${t("ui.detail")}</span> ${arrow("right")}</span>
     </a>`;
   }
 
