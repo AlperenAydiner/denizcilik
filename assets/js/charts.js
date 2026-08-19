@@ -119,7 +119,9 @@
     items.forEach((d, i) => {
       const y = 12 + i * rowH;
       const lbl = el("text", { x: 0, y: y + 24, class: "axis-label", "font-size": 13 });
-      lbl.setAttribute("fill", "var(--text-soft)"); lbl.textContent = d.label; svg.appendChild(lbl);
+      lbl.setAttribute("fill", "var(--text-soft)"); lbl.textContent = d.label;
+      markEdit(lbl, d.editLabel);
+      svg.appendChild(lbl);
       svg.appendChild(el("rect", { x: labelW, y: y + 8, width: barMax, height: 22, rx: 7, fill: "var(--surface-2)" }));
       const w = (barMax * d.value) / max;
       const bar = el("rect", { x: labelW, y: y + 8, width: 0, height: 22, rx: 7, fill: d.color || "var(--accent)", class: "bar-rect", style: "cursor:pointer" });

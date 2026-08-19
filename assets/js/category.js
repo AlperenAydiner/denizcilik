@@ -249,6 +249,8 @@
                f: "deger", l, k: "num" };
     };
   }
+  const RENAME_WARN = "Bu ad, aynı satırın kimliği. Değiştirirsen yalnız bu yılın kaydı yeniden adlandırılır; diğer yıllar eski adla kalır ve grafikte ayrı görünür.";
+
   function bdEdit(r) {
     // Ülke kırılımı fact_country'de, diğerleri fact_breakdown'da tutulur
     if (r._src === "fact_country") {
@@ -257,6 +259,12 @@
     }
     return { t: "fact_breakdown", m: { kategori: r.kategori, yil: r.yil, boyut: r.boyut, etiket: r.etiket, seri: r.seri },
              f: "deger", l: `${r.etiket} · ${r.yil}`, k: "num" };
+  }
+  // Aynı satırın etiket (ad) sütunu
+  function bdEditLabel(r) {
+    const d = bdEdit(r);
+    return Object.assign({}, d, { f: r._src === "fact_country" ? "ulke" : "etiket",
+                                  l: `${r.etiket} — ad`, k: "text", w: RENAME_WARN });
   }
 
   function draw() {
@@ -316,11 +324,14 @@
         rows = rows.filter((r) => inR.has(r.liman));
       }
       const top = rows.sort((a, b) => b.deger - a.deger).slice(0, 10);
-      if (top.length) C.bars(ph, { unit, items: top.map((r) => ({
-        label: r.liman, value: r.deger, color: accent,
-        edit: { t: "fact_port", m: { kategori: cat, yil: useYear, liman: r.liman, seri: seri },
-                f: "deger", l: `${r.liman} · ${useYear}`, k: "num" },
-      })) });
+      if (top.length) C.bars(ph, { unit, items: top.map((r) => {
+        const m = { kategori: cat, yil: useYear, liman: r.liman, seri: seri };
+        return {
+          label: r.liman, value: r.deger, color: accent,
+          edit: { t: "fact_port", m: m, f: "deger", l: `${r.liman} · ${useYear}`, k: "num" },
+          editLabel: { t: "fact_port", m: m, f: "liman", l: `${r.liman} — ad`, k: "text", w: RENAME_WARN },
+        };
+      }) });
       else ph.innerHTML = `<p class="csub" data-i18n="cat.noPortData">${t("cat.noPortData")}</p>`;
     }
 
@@ -347,7 +358,8 @@
       const rows = bRows().filter((r) => r.boyut === cfg.barsDim.dim);
       const yr = Math.max(...rows.map((r) => r.yil));
       const items = rows.filter((r) => r.yil === yr).sort((a, b) => b.deger - a.deger).slice(0, cfg.barsDim.top)
-        .map((r) => ({ label: short(r.etiket), value: r.deger, color: accent, edit: bdEdit(r) }));
+        .map((r) => ({ label: short(r.etiket), value: r.deger, color: accent,
+                       edit: bdEdit(r), editLabel: bdEditLabel(r) }));
       if (items.length) C.bars(bh, { unit, items });
     }
   }
