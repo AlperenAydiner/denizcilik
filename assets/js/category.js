@@ -329,10 +329,74 @@
       ${arrow("right")}</a>`;
   }
 
-  function start() {
+  /* ---------- Detay veri: Supabase fact_* → yoksa statik detail/<kat>.js yedeği ---------- */
+  const SUPA_URL = "https://mczowhdwwdidchtgeioo.supabase.co";
+  const SUPA_KEY = "sb_publishable_0GoNDg3SAFC7dK1AOc2SsA_u7bN8Bc2";
+
+  async function loadDetailFromSupabase(catSlug) {
+    const h = { apikey: SUPA_KEY, Authorization: "Bearer " + SUPA_KEY };
+    // Supabase projesinde sunucu tarafı sabit 1000 satır tavanı var (limit= parametresi
+    // etkisiz) — Range header ile sayfalayarak tüm satırları çekiyoruz.
+    async function get(path) {
+      let all = [], offset = 0;
+      for (;;) {
+        const r = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
+          headers: Object.assign({}, h, { Range: `${offset}-${offset + 999}` }),
+        });
+        if (!r.ok && r.status !== 206) throw new Error(path + " → HTTP " + r.status);
+        const chunk = await r.json();
+        all = all.concat(chunk);
+        if (chunk.length < 1000) break;
+        offset += 1000;
+      }
+      return all;
+    }
+    if (catSlug === "bogazlar") {
+      // fact_strait: kendi kategorili değil, bogaz sütunuyla ayrışır — monthly şekline dönüştürülür
+      const rows = await get("fact_strait?select=*&bogaz=eq.istanbul");
+      if (!Array.isArray(rows) || !rows.length) throw new Error("boş fact_strait");
+      const monthly = [];
+      rows.forEach((r) => {
+        if (r.gemi_adedi != null) monthly.push({ kategori: "bogazlar", yil: r.yil, ay: r.ay, seri: "toplam", deger: +r.gemi_adedi });
+        if (r.gros_ton != null) monthly.push({ kategori: "bogazlar", yil: r.yil, ay: r.ay, seri: "gros_ton", deger: +r.gros_ton });
+      });
+      return { monthly, ports: [], breakdown: [] };
+    }
+    const q = `kategori=eq.${catSlug}`;
+    const [monthly, ports, breakdown, country] = await Promise.all([
+      get(`fact_monthly?select=*&${q}`),
+      get(`fact_port?select=*&${q}`),
+      get(`fact_breakdown?select=*&${q}`),
+      get(`fact_country?select=*&${q}`),
+    ]);
+    // ülke kırılımı, diğer boyutlarla aynı fact_breakdown şekline (boyut='ulke') dönüştürülüp birleştirilir
+    const countryAsBreakdown = country.map((r) => ({
+      kategori: r.kategori, yil: r.yil, boyut: "ulke", etiket: r.ulke, seri: r.seri, deger: r.deger,
+    }));
+    if (!monthly.length && !ports.length && !breakdown.length) throw new Error("boş sonuç");
+    const merged = breakdown.concat(countryAsBreakdown);
+    const out = { monthly, ports, breakdown: merged };
+    // Yalnız TEK boyutlu kırılıma sahip kategoriler için (örn. filo: sadece gemi_cinsi)
+    // yıllık trend güvenle türetilebilir — birden çok boyut varsa toplamak çift sayım olur.
+    const dims = new Set(merged.map((r) => r.boyut));
+    if (merged.length && dims.size === 1) {
+      const trend = {};
+      merged.forEach((r) => { trend[r.yil] = (trend[r.yil] || 0) + r.deger; });
+      out.trend = trend;
+    }
+    return out;
+  }
+
+  async function start() {
     const MD = window.MARITIME_DATA;
     H = MD.headline; P = MD.ports; T = MD.trend;
-    DET = window.DETAIL_DATA || { monthly: [], ports: [], breakdown: [] };
+    try {
+      DET = await loadDetailFromSupabase(cat);
+      console.info(`[category] ${cat}: detay veri Supabase'den yüklendi.`);
+    } catch (e) {
+      DET = window.DETAIL_DATA || { monthly: [], ports: [], breakdown: [] };
+      console.warn(`[category] ${cat}: Supabase'den yüklenemedi, statik yedeğe düşüldü:`, e.message);
+    }
     m = H[cfg.headKey];
     accent = getComputedStyle(document.documentElement).getPropertyValue(cfg.accent).trim();
     document.title = t("cat." + cat) + " — " + t("site.title");

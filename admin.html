@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Yönetim Paneli — Denizcilik İstatistikleri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/admin.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+<div id="site-header"></div>
+<main>
+  <section class="page-hero"><div class="wrap">
+    <div class="page-title">
+      <span class="page-icon" style="color:var(--sea-500)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+      </span>
+      <h1>Yönetim Paneli</h1>
+    </div>
+    <p class="intro">Site verilerini düzenle. Değişiklikler bir sonraki sayfa yüklemesinde yansır.</p>
+  </div></section>
+
+  <section class="section" style="padding-top:0"><div class="wrap">
+
+    <!-- Giriş formu -->
+    <div id="loginBox" class="admin-card" style="max-width:420px">
+      <h2 style="font-size:1.3rem;margin-bottom:18px">Giriş yap</h2>
+      <div class="field"><label>E-posta</label><input type="email" id="loginEmail" autocomplete="username"></div>
+      <div class="field"><label>Şifre</label><input type="password" id="loginPass" autocomplete="current-password"></div>
+      <button class="btn btn-primary" id="loginBtn" type="button" style="width:100%;justify-content:center">Giriş yap</button>
+      <p id="loginMsg" class="admin-msg"></p>
+    </div>
+
+    <!-- Panel (girişten sonra görünür) -->
+    <div id="adminBox" hidden>
+      <div class="admin-topbar">
+        <span id="whoAmI"></span>
+        <button class="btn btn-ghost" id="logoutBtn" type="button">Çıkış yap</button>
+      </div>
+
+      <div class="admin-tabs">
+        <button type="button" class="on" data-tab="metrics">Metrikler</button>
+        <button type="button" data-tab="ports">Limanlar</button>
+        <button type="button" data-tab="trends">Trendler</button>
+        <button type="button" data-tab="detail">Detay Veri</button>
+      </div>
+
+      <div class="admin-panel" id="tab-metrics"></div>
+      <div class="admin-panel" id="tab-ports" hidden></div>
+      <div class="admin-panel" id="tab-trends" hidden></div>
+      <div class="admin-panel" id="tab-detail" hidden></div>
+    </div>
+
+  </div></section>
+</main>
+<div id="site-footer"></div>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/logos-data.js"></script>
+<script src="assets/js/layout.js"></script>
+<script src="assets/js/admin.js"></script>
+</body>
+</html>
