@@ -7,15 +7,17 @@
   window.MD = D;
 
   /* ---------- Sayı biçimlendirme (Türkçe) ---------- */
-  const nf0 = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 0 });
-  const nf1 = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 });
+  const LOC = (window.MDLang && window.MDLang.locale()) || "tr-TR";
+  const nf0 = new Intl.NumberFormat(LOC, { maximumFractionDigits: 0 });
+  const nf1 = new Intl.NumberFormat(LOC, { maximumFractionDigits: 1 });
 
   // Ham sayı → "531,7 milyon" gibi vatandaş-dostu ifade
   function human(n) {
     const a = Math.abs(n);
-    if (a >= 1e9) return { v: nf1.format(n / 1e9), u: "milyar" };
-    if (a >= 1e6) return { v: nf1.format(n / 1e6), u: "milyon" };
-    if (a >= 1e3) return { v: nf0.format(n / 1e3), u: "bin" };
+    const T = (k, d) => (window.t ? window.t(k) : d);
+    if (a >= 1e9) return { v: nf1.format(n / 1e9), u: T("num.milyar", "milyar") };
+    if (a >= 1e6) return { v: nf1.format(n / 1e6), u: T("num.milyon", "milyon") };
+    if (a >= 1e3) return { v: nf0.format(n / 1e3), u: T("num.bin", "bin") };
     return { v: nf0.format(n), u: "" };
   }
   function fmt(n) { return nf0.format(n); }
@@ -46,7 +48,7 @@
     const decimals = parseInt(el.dataset.dec || "0", 10);
     const dur = 1500;
     const start = performance.now();
-    const fmtLocal = new Intl.NumberFormat("tr-TR", {
+    const fmtLocal = new Intl.NumberFormat(LOC, {
       minimumFractionDigits: decimals, maximumFractionDigits: decimals,
     });
     // rAF çalışmayan ortamlarda (gizli sekme) nihai değeri koru
@@ -106,19 +108,6 @@
   window.MDObserve = observeReveals;
   window.MDScan = scan;
 
-  /* ---------- Mobil menü ---------- */
-  function initMobileNav() {
-    const toggle = document.querySelector(".menu-toggle");
-    const menu = document.querySelector(".mainmenu");
-    if (!toggle || !menu) return;
-    toggle.addEventListener("click", () => {
-      const open = menu.classList.toggle("open-mobile");
-      menu.style.cssText = open
-        ? "display:flex;position:absolute;top:76px;left:0;right:0;flex-direction:column;background:var(--navy-900);padding:16px 24px;border-bottom:1px solid var(--border);gap:4px;"
-        : "";
-    });
-  }
-
   /* ---------- Header kaydırma efekti ---------- */
   function initHeaderScroll() {
     const h = document.querySelector(".site-header");
@@ -146,8 +135,8 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
+    window.MDLang && window.MDLang.apply();
     observeReveals();
-    initMobileNav();
     initHeaderScroll();
     markActive();
     initYear();

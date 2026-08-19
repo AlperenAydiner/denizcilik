@@ -5,6 +5,7 @@
   "use strict";
   if (!window.MARITIME_DATA) return;
   const U = window.MDUtil;
+  const t = window.t || ((k) => k);
   let D, P;
   const host = document.getElementById("pageContent");
   if (!host) return;
@@ -13,17 +14,17 @@
   D = window.MARITIME_DATA; P = D.ports;
   host.innerHTML = `
     <section class="page-hero"><div class="wrap">
-      <div class="breadcrumb reveal"><a href="index.html">Anasayfa</a> ${window.__arrow("right")} <span>Harita</span></div>
-      <h1 class="reveal">Türkiye Limanları Haritası</h1>
-      <p class="intro reveal d1">Her balonun büyüklüğü o limanın hacmini gösterir. Bir limanın üzerine gelin; yük ve konteyner rakamlarını görün. Aşağıdaki tablodan limanları sıralayabilirsiniz.</p>
+      <div class="breadcrumb reveal"><a href="index.html">${t("nav.home")}</a> ${window.__arrow("right")} <span>${t("nav.map")}</span></div>
+      <h1 class="reveal">${t("map.title")}</h1>
+      <p class="intro reveal d1">${t("map.lead")}</p>
     </div></section>
     <section class="section" style="padding-top:10px"><div class="wrap">
       <div class="reveal mapviz" id="haritaMap"></div>
     </div></section>
     <section class="section" style="padding-top:0"><div class="wrap">
-      <div class="section-head reveal"><h2>Limanlar sıralaması</h2><p>Sütun başlığına tıklayarak sıralayın.</p></div>
+      <div class="section-head reveal"><h2>${t("map.table")}</h2></div>
       <div class="chart-card reveal" style="padding:0;overflow:hidden">
-        <table class="data-table" id="portsTable"></table>
+        <div class="table-scroll"><table class="data-table" id="portsTable"></table></div>
       </div>
     </div></section>`;
 
@@ -34,8 +35,8 @@
     const frame = document.createElement("div"); frame.className = "frame";
     const tip = document.createElement("div"); tip.className = "map-tooltip";
     frame.innerHTML = `<div class="controls">
-        <button data-mode="yuk_ton" class="on">Yük (ton)</button>
-        <button data-mode="konteyner_teu">Konteyner (TEU)</button></div>`;
+        <button data-mode="yuk_ton" class="on">${t("map.cargo")}</button>
+        <button data-mode="konteyner_teu">${t("map.container")}</button></div>`;
     const sv = document.createElement("div"); frame.appendChild(sv); frame.appendChild(tip); wrap.appendChild(frame);
     function draw() {
       const vals = P.map((p) => p[mode]).filter((v) => v > 0), max = Math.max(...vals);
@@ -50,8 +51,8 @@
         b.addEventListener("mousemove", (ev) => {
           const p = P.find((x) => x.name === b.dataset.port);
           tip.innerHTML = `<h4>${p.name} <span style="font-size:.7rem;color:var(--text-dim)">${p.sea}</span></h4>
-            <div class="row"><span>Toplam yük</span><b>${U.fmt(p.yuk_ton)} ton</b></div>
-            <div class="row"><span>Konteyner</span><b>${U.fmt(p.konteyner_teu)} TEU</b></div>`;
+            <div class="row"><span>${t("map.cargo")}</span><b>${U.fmt(p.yuk_ton)}</b></div>
+            <div class="row"><span>${t("map.container")}</span><b>${U.fmt(p.konteyner_teu)}</b></div>`;
           const r = frame.getBoundingClientRect();
           tip.style.left = ev.clientX - r.left + "px"; tip.style.top = ev.clientY - r.top + "px"; tip.classList.add("show");
         });
@@ -67,18 +68,18 @@
 
   /* Tablo */
   (function table() {
-    const t = document.getElementById("portsTable");
+    const tbl = document.getElementById("portsTable");
     let sortKey = "yuk_ton", asc = false;
     function render() {
       const rows = [...P].sort((a, b) => (asc ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey]));
-      t.innerHTML = `<thead><tr>
-        <th data-k="name">Liman</th><th data-k="sea">Deniz</th>
-        <th data-k="yuk_ton" style="cursor:pointer">Yük (ton) ↕</th>
-        <th data-k="konteyner_teu" style="cursor:pointer">Konteyner (TEU) ↕</th></tr></thead>
+      tbl.innerHTML = `<thead><tr>
+        <th data-k="name">${t("map.port")}</th><th data-k="sea">${t("map.sea")}</th>
+        <th data-k="yuk_ton" style="cursor:pointer">${t("map.cargo")} ↕</th>
+        <th data-k="konteyner_teu" style="cursor:pointer">${t("map.container")} ↕</th></tr></thead>
         <tbody>${rows.map((p) => `<tr>
           <td><b>${p.name}</b></td><td style="color:var(--text-dim)">${p.sea}</td>
           <td>${U.fmt(p.yuk_ton)}</td><td>${U.fmt(p.konteyner_teu)}</td></tr>`).join("")}</tbody>`;
-      t.querySelectorAll("th[data-k='yuk_ton'],th[data-k='konteyner_teu']").forEach((th) =>
+      tbl.querySelectorAll("th[data-k='yuk_ton'],th[data-k='konteyner_teu']").forEach((th) =>
         th.addEventListener("click", () => { const k = th.dataset.k; asc = k === sortKey ? !asc : false; sortKey = k; render(); }));
     }
     render();

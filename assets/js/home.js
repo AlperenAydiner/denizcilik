@@ -7,27 +7,28 @@
   if (!window.MARITIME_DATA) return;
   const U = window.MDUtil, C = window.MDCharts;
   const icon = window.__icon, arrow = window.__arrow;
+  const t = window.t || ((k) => k);
   // Veri Supabase'den (veya gömülü) geldiğinde doldurulur:
   let H, T;
 
   // KPI tanımları — trend, anahtarla (trendKey) çalışma anında okunur
   const KPIS = [
-    { key: "yuk_ton", href: "yuk.html", ic: "yuk", c: "--c-yuk", unit: "ton",
-      label: "Elleçlenen Yük", sub: "Limanlarda gemilere yüklenen ve indirilen toplam yük", trendKey: "yuk_ton" },
-    { key: "konteyner_teu", href: "konteyner.html", ic: "konteyner", c: "--c-konteyner", unit: "TEU",
-      label: "Konteyner", sub: "Standart konteyner (TEU) elleçleme", trendKey: "konteyner_teu" },
-    { key: "gemi_sayisi", href: "gemi.html", ic: "gemi", c: "--c-gemi", unit: "gemi",
-      label: "Uğrayan Gemi", sub: "Limanlarımıza gelen gemi sayısı", trendKey: "gemi_gros_ton" },
-    { key: "bogaz_gecis", href: "bogazlar.html", ic: "bogaz", c: "--c-bogaz", unit: "geçiş",
-      label: "Boğaz Gemi Geçişi", sub: "İstanbul Boğazı'ndan geçen gemi sayısı", trendKey: null },
-    { key: "kruvaziyer_yolcu", href: "kruvaziyer.html", ic: "kruvaziyer", c: "--c-kruvaziyer", unit: "yolcu",
-      label: "Kruvaziyer Yolcusu", sub: "Türkiye limanlarını ziyaret eden yolcular", trendKey: "kruvaziyer_yolcu" },
-    { key: "roro_arac", href: "roro.html", ic: "roro", c: "--c-roro", unit: "araç",
-      label: "RO-RO ile Araç", sub: "Denizyoluyla taşınan araç sayısı", trendKey: "roro_arac_yil" },
-    { key: "kabotaj_yolcu", href: "kabotaj.html", ic: "kabotaj", c: "--c-kabotaj", unit: "yolcu",
-      label: "Kabotaj Yolcusu", sub: "İç sularda vapur ve feribotla taşınan yolcu", trendKey: "kabotaj_yolcu" },
-    { key: "filo_gemi", href: "filo.html", ic: "filo", c: "--c-filo", unit: "gemi",
-      label: "Türk Ticaret Filosu", sub: "1.000 GT ve üzeri Türk bayraklı gemi", trendKey: null },
+    { key: "yuk_ton", href: "yuk.html", ic: "yuk", c: "--c-yuk", unitKey: "unit.ton",
+      labelKey: "kpi.yuk", trendKey: "yuk_ton" },
+    { key: "konteyner_teu", href: "konteyner.html", ic: "konteyner", c: "--c-konteyner", unitKey: "unit.teu",
+      labelKey: "kpi.konteyner", trendKey: "konteyner_teu" },
+    { key: "gemi_sayisi", href: "gemi.html", ic: "gemi", c: "--c-gemi", unitKey: "unit.gemi",
+      labelKey: "kpi.gemi", trendKey: "gemi_gros_ton" },
+    { key: "bogaz_gecis", href: "bogazlar.html", ic: "bogaz", c: "--c-bogaz", unitKey: "unit.gecis",
+      labelKey: "kpi.bogaz", trendKey: null },
+    { key: "kruvaziyer_yolcu", href: "kruvaziyer.html", ic: "kruvaziyer", c: "--c-kruvaziyer", unitKey: "unit.yolcu",
+      labelKey: "kpi.kruvaziyer", trendKey: "kruvaziyer_yolcu" },
+    { key: "roro_arac", href: "roro.html", ic: "roro", c: "--c-roro", unitKey: "unit.arac",
+      labelKey: "kpi.roro", trendKey: "roro_arac_yil" },
+    { key: "kabotaj_yolcu", href: "kabotaj.html", ic: "kabotaj", c: "--c-kabotaj", unitKey: "unit.yolcu",
+      labelKey: "kpi.kabotaj", trendKey: "kabotaj_yolcu" },
+    { key: "filo_gemi", href: "filo.html", ic: "filo", c: "--c-filo", unitKey: "unit.gemi",
+      labelKey: "kpi.filo", trendKey: null },
   ];
 
   function card(k) {
@@ -41,13 +42,13 @@
     return `<a class="kpi-card reveal" href="${k.href}" style="--kc:var(${k.c})">
       <div class="kpi-top">
         <span class="kpi-ic">${icon(k.ic)}</span>
-        <span class="kpi-label">${k.label}</span>
+        <span class="kpi-label">${t(k.labelKey)}</span>
         ${delta}
       </div>
-      <div class="kpi-num"><span data-count="${hv.v.replace(",", ".")}" data-dec="${hv.v.includes(",") ? 1 : 0}">${hv.v}</span><span class="kpi-unit">${hv.u} ${k.unit}</span></div>
+      <div class="kpi-num"><span data-count="${hv.v.replace(",", ".")}" data-dec="${hv.v.includes(",") ? 1 : 0}">${hv.v}</span><span class="kpi-unit">${hv.u} ${t(k.unitKey)}</span></div>
       <div class="kpi-spark" id="spark-${k.key}"></div>
-      <div class="kpi-sub">${k.sub}</div>
-      <span class="kpi-go">Ayrıntılı incele ${arrow("right")}</span>
+      
+      <span class="kpi-go">${t("ui.detail")} ${arrow("right")}</span>
     </a>`;
   }
 
