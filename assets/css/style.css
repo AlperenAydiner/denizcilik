@@ -149,15 +149,19 @@ body::before {
     radial-gradient(1100px 620px at 78% -8%, var(--atmo), transparent 62%),
     linear-gradient(180deg, var(--page-grad-1), var(--page-grad-2) 45%, var(--page-grad-3));
 }
-/* İnce deniz kartografi dokusu — düz gradyan yüzeyi kırar */
+/* Arka plan dokusu — buruşuk kağıt/buz (grid yerine) */
 body::after {
   content: "";
-  position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.5;
-  background-image:
-    repeating-linear-gradient(0deg, var(--grid-line) 0 1px, transparent 1px 64px),
-    repeating-linear-gradient(90deg, var(--grid-line) 0 1px, transparent 1px 64px);
-  mask-image: radial-gradient(120% 90% at 50% 0%, #000 30%, transparent 78%);
-  -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 30%, transparent 78%);
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22900%22%20height%3D%22900%22%3E%3Cfilter%20id%3D%22p%22%20x%3D%220%22%20y%3D%220%22%20width%3D%22100%25%22%20height%3D%22100%25%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.020%200.008%22%20numOctaves%3D%225%22%20seed%3D%227%22%20stitchTiles%3D%22stitch%22%20result%3D%22n%22%2F%3E%3CfeDiffuseLighting%20in%3D%22n%22%20lighting-color%3D%22%23dfeef4%22%20surfaceScale%3D%222.4%22%20diffuseConstant%3D%221.15%22%20result%3D%22d%22%3E%3CfeDistantLight%20azimuth%3D%22235%22%20elevation%3D%2258%22%2F%3E%3C%2FfeDiffuseLighting%3E%3CfeColorMatrix%20in%3D%22d%22%20type%3D%22matrix%22%20values%3D%221%200%200%200%200%20%201%200%200%200%200%20%201%200%200%200%200%20%200%200%200%200.9%200%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22900%22%20height%3D%22900%22%20filter%3D%22url%28%23p%29%22%2F%3E%3C%2Fsvg%3E");
+  background-size: cover; background-position: center;
+  opacity: 0.5; mix-blend-mode: soft-light;
+  mask-image: linear-gradient(180deg, #000, #000 70%, transparent);
+  -webkit-mask-image: linear-gradient(180deg, #000, #000 70%, transparent);
+}
+:root[data-theme="dark"] body::after { opacity: 0.32; mix-blend-mode: screen; }
+@media (max-width: 820px) {
+  body::after { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22900%22%20height%3D%22900%22%3E%3Cfilter%20id%3D%22p%22%20x%3D%220%22%20y%3D%220%22%20width%3D%22100%25%22%20height%3D%22100%25%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.008%200.020%22%20numOctaves%3D%225%22%20seed%3D%225%22%20stitchTiles%3D%22stitch%22%20result%3D%22n%22%2F%3E%3CfeDiffuseLighting%20in%3D%22n%22%20lighting-color%3D%22%23dfeef4%22%20surfaceScale%3D%222.4%22%20diffuseConstant%3D%221.15%22%20result%3D%22d%22%3E%3CfeDistantLight%20azimuth%3D%22235%22%20elevation%3D%2258%22%2F%3E%3C%2FfeDiffuseLighting%3E%3CfeColorMatrix%20in%3D%22d%22%20type%3D%22matrix%22%20values%3D%221%200%200%200%200%20%201%200%200%200%200%20%201%200%200%200%200%20%200%200%200%200.9%200%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22900%22%20height%3D%22900%22%20filter%3D%22url%28%23p%29%22%2F%3E%3C%2Fsvg%3E"); }
 }
 
 .wrap { width: min(100% - 48px, var(--wrap)); margin-inline: auto; }
@@ -915,12 +919,13 @@ body::after {
 @keyframes logoScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .logo-item { flex: none; display: grid; place-items: center; padding: 0 4px; }
 .logo-item img {
-  height: 40px; width: auto; opacity: .55;
-  filter: grayscale(1); transition: opacity .25s, filter .25s;
+  height: 44px; width: auto; opacity: 1;
+  filter: grayscale(1) brightness(.45) contrast(1.25);
+  transition: opacity .25s, filter .25s;
 }
-.logo-item:hover img { opacity: 1; filter: none; }
-:root[data-theme="dark"] .logo-item img { filter: grayscale(1) brightness(2.4) contrast(.75); opacity: .6; }
-:root[data-theme="dark"] .logo-item:hover img { filter: brightness(2.2); opacity: 1; }
+.logo-item:hover img { filter: none; }
+:root[data-theme="dark"] .logo-item img { filter: grayscale(1) brightness(3.2) contrast(.9); opacity: .85; }
+:root[data-theme="dark"] .logo-item:hover img { filter: brightness(2.6); opacity: 1; }
 
 .footer-main {
   display: grid; grid-template-columns: 1fr 1.25fr 1fr; gap: 46px;
@@ -953,3 +958,24 @@ body::after {
   .logo-track { gap: 36px; animation-duration: 32s; }
   .logo-item img { height: 32px; }
 }
+
+/* Filtre paneli — yıl dropdown + çoktan seçmeli ay */
+.filter-select {
+  width: 100%; padding: 10px 12px; border-radius: 10px; font: inherit; font-size: .92rem;
+  background: var(--bg-alt); border: 1px solid var(--border); color: var(--text); cursor: pointer;
+}
+.filter-select:focus { outline: none; border-color: var(--accent); }
+.filter-group label { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.filter-actions { display: inline-flex; gap: 6px; }
+.filter-actions button {
+  background: none; border: none; color: var(--accent); font-size: .74rem; font-weight: 600;
+  padding: 2px 4px; text-transform: none; letter-spacing: 0;
+}
+.filter-actions button:hover { text-decoration: underline; }
+.filter-months { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 4px; }
+.filter-months button {
+  padding: 8px 4px; border-radius: 8px; font-size: .78rem; font-weight: 600;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text-dim); transition: .18s;
+}
+.filter-months button:hover { border-color: var(--accent); color: var(--text); }
+.filter-months button.on { background: var(--accent); border-color: var(--accent); color: #fff; }

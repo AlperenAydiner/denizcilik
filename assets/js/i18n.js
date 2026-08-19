@@ -23,6 +23,8 @@
       "ui.detail": "Ayrıntılı incele", "ui.source": "Resmi kaynak sayfası",
       "ui.viewFiles": "Bu kategorinin dosyaları",
       "ui.notFound": "Sonuç bulunamadı.",
+      "ui.month": "Ay", "ui.clear": "Temizle", "ui.series": "Seri", "ui.total": "Toplam",
+      "ui.monthSelected": "ay seçili", "ui.partial": "kısmi dönem",
 
       "home.eyebrow": "Resmi Denizcilik İstatistikleri Panosu",
       "home.title": "Türkiye'nin Denizcilik Verileri",
@@ -44,6 +46,7 @@
       "cat.bogazlar": "Türk Boğazları Gemi Geçiş İstatistikleri", "cat.filo": "Filo İstatistikleri",
 
       "cat.prevYear": "Önceki yıl", "cat.topPort": "En büyük liman",
+      "cat.monthTitle": "Aylara göre dağılım",
       "cat.trendTitle": "Yıllara göre gelişim", "cat.portsTitle": "Limanlara göre dağılım",
       "cat.noPortData": "Bu kategori için liman kırılımı bulunmuyor.",
       "cat.latestNote": "Liman kırılımı en güncel yıla aittir.",
@@ -85,6 +88,8 @@
       "ui.detail": "View details", "ui.source": "Official source page",
       "ui.viewFiles": "Files for this category",
       "ui.notFound": "No results found.",
+      "ui.month": "Month", "ui.clear": "Clear", "ui.series": "Series", "ui.total": "Total",
+      "ui.monthSelected": "months selected", "ui.partial": "partial period",
 
       "home.eyebrow": "Official Maritime Statistics Dashboard",
       "home.title": "Türkiye's Maritime Data",
@@ -106,6 +111,7 @@
       "cat.bogazlar": "Turkish Straits Vessel Transit Statistics", "cat.filo": "Fleet Statistics",
 
       "cat.prevYear": "Previous year", "cat.topPort": "Largest port",
+      "cat.monthTitle": "Monthly breakdown",
       "cat.trendTitle": "Development by year", "cat.portsTitle": "Breakdown by port",
       "cat.noPortData": "No port breakdown available for this category.",
       "cat.latestNote": "Port breakdown is for the most recent year.",

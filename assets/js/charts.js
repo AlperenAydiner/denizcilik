@@ -194,5 +194,66 @@
     host.appendChild(svg);
   }
 
-  window.MDCharts = { lineArea, bars, donut, spark };
+
+  /* ---------- Gruplu / yığılmış sütun (aylık) ---------- */
+  function columns(host, opts) {
+    host.innerHTML = "";
+    const labels = opts.labels, series = opts.series, stacked = !!opts.stacked;
+    const W = 760, H = 300, pad = { t: 18, r: 16, b: 42, l: 62 };
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "xMidYMid meet" });
+    const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+    const totals = labels.map((_, i) =>
+      stacked ? series.reduce((s2, se) => s2 + (se.values[i] || 0), 0)
+              : Math.max(...series.map((se) => se.values[i] || 0)));
+    let max = Math.max(...totals, 1) * 1.12;
+    const Y = (v) => pad.t + ih - (ih * v) / max;
+    const bw = iw / labels.length;
+    const inner = Math.min(bw * 0.66, 42);
+
+    for (let i = 0; i <= 4; i++) {
+      const v = (max * i) / 4, y = Y(v);
+      svg.appendChild(el("line", { x1: pad.l, y1: y, x2: W - pad.r, y2: y, class: "grid-line" }));
+      const tx = el("text", { x: pad.l - 10, y: y + 4, class: "axis-label", "text-anchor": "end" });
+      const hv = window.MDUtil.human(v);
+      tx.textContent = hv.v + (hv.u ? " " + hv.u[0].toUpperCase() : "");
+      svg.appendChild(tx);
+    }
+    labels.forEach((lb, i) => {
+      const cx = pad.l + bw * i + bw / 2;
+      const tx = el("text", { x: cx, y: H - 14, class: "axis-label", "text-anchor": "middle", "font-size": 11 });
+      tx.textContent = lb; svg.appendChild(tx);
+      if (stacked) {
+        let acc = 0;
+        series.forEach((se) => {
+          const v = se.values[i] || 0; if (!v) return;
+          const y0 = Y(acc + v), h = Y(acc) - Y(acc + v);
+          const r = el("rect", { x: cx - inner / 2, y: y0, width: inner, height: Math.max(h, 0), fill: se.color, style: "cursor:pointer" });
+          attach(r, lb, se, v, opts, host, W);
+          svg.appendChild(r); acc += v;
+        });
+      } else {
+        const n = series.length, sw = inner / n;
+        series.forEach((se, si) => {
+          const v = se.values[i] || 0; if (!v) return;
+          const x = cx - inner / 2 + si * sw;
+          const r = el("rect", { x: x, y: Y(v), width: Math.max(sw - 2, 2), height: Math.max(ih - (Y(v) - pad.t), 0), rx: 3, fill: se.color, style: "cursor:pointer" });
+          attach(r, lb, se, v, opts, host, W);
+          svg.appendChild(r);
+        });
+      }
+    });
+    host.appendChild(svg);
+
+    function attach(node, lb, se, v, opts2, hostEl, WW) {
+      node.addEventListener("mouseenter", (ev) => {
+        node.style.opacity = "0.82";
+        const rect = hostEl.getBoundingClientRect(), sc = rect.width / WW;
+        showTip(`<b>${lb}</b> — ${se.name}<br><b>${nf.format(v)}</b> ${opts2.unit || ""}`,
+          rect.left + (ev.offsetX || 0) * 0 + ev.clientX - rect.left + rect.left, ev.clientY + window.scrollY);
+      });
+      node.addEventListener("mouseleave", () => { node.style.opacity = "1"; hideTip(); });
+    }
+  }
+
+  window.MDCharts = { lineArea, bars, donut, spark, columns };
 })();
