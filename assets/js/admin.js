@@ -53,6 +53,29 @@
 
   $("logoutBtn").addEventListener("click", async () => { await sb.auth.signOut(); refreshSession(); });
 
+  /* ---------- OTP (6 haneli kod) girişi ----------
+     E-postadaki davet/magic-link'e tıklamak yerine kod kullanılır — Gmail gibi
+     e-posta servislerinin linki otomatik "ön-tarayıp" tek kullanımlık token'ı
+     tüketmesi sorununu (davet linkinin oturum açmaması) tamamen atlar. */
+  $("otpSendBtn").addEventListener("click", async () => {
+    const email = $("loginEmail").value.trim();
+    if (!email) { $("otpMsg").textContent = "Önce yukarıya e-postanı yaz."; $("otpMsg").className = "admin-msg err"; return; }
+    $("otpMsg").textContent = "Gönderiliyor…"; $("otpMsg").className = "admin-msg";
+    const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
+    if (error) { $("otpMsg").textContent = "Hata: " + error.message; $("otpMsg").className = "admin-msg err"; return; }
+    $("otpStep1").hidden = true; $("otpStep2").hidden = false;
+    $("otpMsg").textContent = "Kod gönderildi, e-postanı kontrol et."; $("otpMsg").className = "admin-msg";
+  });
+  $("otpVerifyBtn").addEventListener("click", async () => {
+    const email = $("loginEmail").value.trim();
+    const code = $("otpCode").value.trim();
+    $("otpMsg").textContent = "Doğrulanıyor…"; $("otpMsg").className = "admin-msg";
+    const { error } = await sb.auth.verifyOtp({ email, token: code, type: "email" });
+    if (error) { $("otpMsg").textContent = "Hata: " + error.message; $("otpMsg").className = "admin-msg err"; return; }
+    $("otpMsg").textContent = "";
+    refreshSession();
+  });
+
   /* ---------- Sekmeler ---------- */
   let currentTab = "metrics";
   document.querySelectorAll(".admin-tabs button").forEach((b) => {

@@ -10,6 +10,12 @@
 
 .admin-msg { margin-top: 10px; font-size: 0.88rem; color: var(--text-soft); }
 .admin-msg.err { color: #c0455e; }
+.admin-otp-divider {
+  display: flex; align-items: center; gap: 12px; margin: 20px 0 16px;
+  color: var(--text-dim); font-size: 0.78rem; text-transform: uppercase; letter-spacing: .06em;
+}
+.admin-otp-divider::before, .admin-otp-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+#otpCode { text-align: center; font-size: 1.3rem; letter-spacing: .3em; font-weight: 700; }
 
 .admin-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .admin-topbar span { color: var(--text-soft); font-size: 0.92rem; }
