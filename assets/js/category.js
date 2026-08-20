@@ -53,6 +53,7 @@
       series: [{ k: "turk", key: "series.turk" }, { k: "yabanci", key: "series.yabanci" }],
       split: true, splitKey: "dim.gemi.split",
       quad: true, // seri/bölge filtresi yok; 2×2 KPI panosu (Türk/yabancı gemi + en çok gemi/GT gelen liman)
+      defaultYearSpan: 2, // trend grafikleri en az 2 yıl ister — ilk açılışta hepsi dolu görünsün
     },
     kruvaziyer: {
       ic: "kruvaziyer", accent: "--c-kruvaziyer", unit: "unit.yolcu", headKey: "kruvaziyer_yolcu", arch: "kruvaziyer",
@@ -776,6 +777,7 @@
     const span = cfg.defaultYearSpan || 1;
     state = { years: years.slice(0, Math.min(span, years.length)), months: [], seri: "toplam", region: "all" };
     state.months = curAvail();
+    closeAllDD(); // sayfa ilk açıldığında yıl/ay açılır listeleri kesin kapalı başlasın
 
     skeleton(); renderFilters(); renderDash(); renderArchive();
     window.MDScan && window.MDScan();
