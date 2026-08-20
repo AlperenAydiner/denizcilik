@@ -188,3 +188,27 @@ insert into content (key, tr, en) values
 ('ui.yearlyTotal', 'yıllık toplam', 'yearly total'),
 ('ui.yearsSelected', 'yıl seçili', 'years selected')
 on conflict (key) do nothing;
+
+-- Gemi (yeniden düzenlenmiş grafik başlıkları) + Kabotaj (4'lü KPI panosu) — sonradan eklendi
+insert into content (key, tr, en) values
+('gemi.chartTurk', 'Türk bayraklı gemi', 'Turkish-flagged vessels'),
+('gemi.chartYabanci', 'Yabancı bayraklı gemi', 'Foreign-flagged vessels'),
+('gemi.chartPortsGt', 'Gross tonaja göre dağılım', 'Distribution by gross tonnage'),
+('kabotaj.kpiArac', 'Taşınan araç sayısı', 'Vehicles carried'),
+('kabotaj.kpiAracMil', 'Araç x Mil', 'Vehicle x Miles'),
+('kabotaj.kpiYolcu', 'Taşınan yolcu sayısı', 'Passengers carried'),
+('kabotaj.kpiYolcuMil', 'Yolcu x Mil', 'Passenger x Mile'),
+('unit.aracmil', 'araç-mil', 'vehicle-miles'),
+('unit.yolcumil', 'yolcu-mil', 'passenger-miles'),
+('ui.yearlyTotal', 'yıllık toplam', 'yearly total'),
+('ui.yearsSelected', 'yıl seçili', 'years selected'),
+('ui.needTwoYears', 'Bu grafikte eğilim görmek için filtreden en az 2 yıl seç.', 'Select at least 2 years in the filter to see a trend here.')
+on conflict (key) do nothing;
+
+-- Kabotaj için "Araç x Mil" / "Yolcu x Mil" trend verisi (23 yıl, 2003-2025) resmi
+-- kaynaktaki iki dosyanın 3. sütunundan çıkarıldı (kolon başlığında ayrı bir dosya
+-- olarak listelenmiyordu, ama Excel içinde "Araç Sayısı"/"Yolcu Sayısı" yanında
+-- ayrı sütun olarak vardı). trends tablosuna metric=kabotaj_arac_mil / kabotaj_yolcu_mil
+-- olarak REST üzerinden (service_role, yerel) eklendi — bu SQL dosyası sadece kayıt amaçlı,
+-- yeniden eklemek gerekirse ilgili .xls dosyaları kabotaj-istatistikleri sayfasından
+-- indirilip 4. sütun (index 2) okunmalı.
