@@ -1,11 +1,9 @@
 /* ============================================================
    admin-edit.js — Sitenin kendisi üzerinde düzenleme
-   Giriş yapılmışsa (admin.html'deki Supabase oturumu) çalışır.
-
-   İki mod:
-   · ?edit=1  → kabuk modu: üst şerit + düzenleme baştan açık
-   · ?edit yok → sadece "Bu sayfayı düzenle" düğmesi (kabuğa girer)
-   Oturum yoksa hiçbir şey yapmaz; ziyaretçi için sayfa değişmez.
+   Yalnız admin.html'den giriş yapıp ?edit=1 ile gelindiğinde devreye girer.
+   Oturum yoksa VEYA ?edit=1 yoksa hiçbir şey yapmaz — giriş yapmış admin
+   sitede normal geziniyorsa bile hiçbir görsel iz bırakmaz (floating
+   düğme/şerit yok); düzenleme yalnız admin panelinden başlar.
 
    Düzenlenebilir olanlar:
    · [data-i18n]        → content tablosu (metin, TR/EN)
@@ -204,19 +202,6 @@
       localStorage.removeItem(SESSION_KEY);
       location.href = "./";
     });
-  }
-
-  /* "Bu sayfayı düzenle" — kabuk dışındayken tek düğme */
-  function buildEnterButton() {
-    const btn = document.createElement("button");
-    btn.type = "button"; btn.id = "mdEditToggle";
-    btn.innerHTML = ICON.pencil + "<span>Bu sayfayı düzenle</span>";
-    btn.addEventListener("click", () => {
-      const u = new URL(location.href);
-      u.searchParams.set("edit", "1");
-      location.href = u.toString();
-    });
-    document.body.appendChild(btn);
   }
 
   /* ---------- Düzenleme pencereleri ---------- */
@@ -447,18 +432,19 @@
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePopover(); });
   }
 
-  /* ---------- Başlat ---------- */
+  /* ---------- Başlat ----------
+     Düzenleme yalnız admin panelinden gelen ?edit=1 ile açılır. Onun dışında
+     normal gezinme — giriş yapmış olsan bile — sıradan bir ziyaretçiden
+     hiçbir görsel farkı olmasın diye burada hiçbir şey oluşturulmaz. */
   function start() {
-    if (inShell) {
-      document.documentElement.classList.add("md-edit-mode", "md-edit-shell");
-      buildBar();
-    } else {
-      buildEnterButton();
-    }
+    if (!inShell) return;
+    document.documentElement.classList.add("md-edit-mode", "md-edit-shell");
+    buildBar();
     wireClicks();
   }
 
   (async function init() {
+    if (!inShell) return; // ?edit=1 yoksa oturum kontrolüne bile gerek yok
     if (isExpired(session, 60)) {
       session = await refreshSession(session);
       if (!session) return; // tazeleyemedik → ziyaretçi gibi davran
