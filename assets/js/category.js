@@ -53,8 +53,23 @@
       ic: "konteyner", accent: "--c-konteyner", unit: "unit.teu", headKey: "konteyner_teu", arch: "konteyner",
       trendKey: "konteyner_teu",
       series: [{ k: "yukleme", key: "series.yukleme" }, { k: "bosaltma", key: "series.bosaltma" }],
-      split: true,
-      barsDim: { dim: "ulke", key: "dim.konteyner.bars", top: 10 },
+      quad: true, defaultYearSpan: 2,
+      // Seri adları state'ten üretilir: "{tip}__{akim}__{boyut}" (bkz. seriFor).
+      // Bu boyutlu veri yalnız 2020'den itibaren var — kaynakta öncesi farklı formatta.
+      composed: true, yearMin: 2020,
+      filters: ["years", "months", "seri", "bayrak", "tip", "region"],
+      cards: [
+        { type: "sum", labelKey: "konteyner.kpiTotal", unitKey: "unit.teu" },
+        { type: "topPort", labelKey: "konteyner.kpiTopPort", unitKey: "unit.teu" },
+        { type: "topCountry", labelKey: "konteyner.kpiTopCountry", unitKey: "unit.teu" },
+      ],
+      charts: [
+        { id: "dRegime", type: "regime", titleKey: "konteyner.chartRegime" },
+        { id: "dCins", type: "cins", titleKey: "konteyner.chartCins" },
+        { id: "dTrend", type: "singleSeries", titleKey: "cat.trendTitle" },
+        { id: "dPorts", type: "ports", titleKey: "cat.portsTitle" },
+        { id: "dCountries", type: "countries", titleKey: "dim.konteyner.bars" },
+      ],
     },
     gemi: {
       ic: "gemi", accent: "--c-gemi", unit: "unit.gemi", headKey: "gemi_sayisi", arch: "gemi",
@@ -148,9 +163,41 @@
   const sumSel = (seri) => state.years.reduce((tot, y) =>
     tot + state.months.reduce((s, mo) => s + mVal(y, mo, seri), 0), 0);
 
+  /* Bileşik seri adı: "{tip}__{akim}__{boyut}" (konteyner). Boyut verilmezse
+     bayrak filtresi kullanılır. cfg.composed olmayan sayfalarda seri adı sabittir. */
+  function seriFor(spec) {
+    if (!cfg.composed) return spec;
+    return state.tip + "__" + state.seri + "__" + (spec || state.bayrak);
+  }
+
+  // Konteyner cinsi kırılımı (20 / 40 / 40+) — Konteyner Tipi filtresi burada "hangi kayıt
+  // grubu okunsun" anlamına gelir (cins verisi kaynakta zaten Dolu/Boş ayrı tutuluyor);
+  // "Tümü" seçiliyse ikisi toplanır. Seri/Bayrak filtreleri de akım/bayrak sütununu seçer.
+  function aggCins() {
+    const suffix = "__" + state.seri + "__" + state.bayrak;
+    const kinds = state.tip === "tumu" ? ["dolu", "bos"] : [state.tip];
+    const wanted = new Set(kinds.map((k) => k + suffix));
+    const rows = bRows().filter((r) => r.boyut === "konteyner_cinsi" && state.years.includes(r.yil)
+      && wanted.has(r.seri));
+    const agg = {};
+    rows.forEach((r) => { agg[r.etiket] = (agg[r.etiket] || 0) + r.deger; });
+    return ["20", "40", "40+"].map((e) => ({ etiket: e, deger: agg[e] || 0 }));
+  }
+  // Rejim türü dağılımı (Kabotaj / Transit / Yurt Dışı) — Seri (yükleme/boşaltma/toplam)
+  // ve Tip/Bayrak filtrelerine göre değişir; hepsi seriFor() üstünden okunur.
+  function aggRegime() {
+    return ["disari", "kabotaj", "transit"].map((dim) => ({
+      key: dim, deger: sumSel(seriFor(dim)),
+    })).filter((x) => x.deger > 0);
+  }
+
   // Liman bazlı toplam (fact_port'ta ay kırılımı yok — seçili yılların toplamı, yıllık).
   function aggPorts(seri) {
-    const rows = pRows().filter((r) => r.seri === seri && state.years.includes(r.yil) && r.deger > 0);
+    let rows = pRows().filter((r) => r.seri === seri && state.years.includes(r.yil) && r.deger > 0);
+    if (state.region !== "all") {
+      const inR = new Set(P.filter((p) => p.sea === state.region).map((p) => p.name));
+      rows = rows.filter((r) => inR.has(r.liman));
+    }
     const agg = {};
     rows.forEach((r) => { agg[r.liman] = (agg[r.liman] || 0) + r.deger; });
     return Object.keys(agg).map((liman) => ({ liman, deger: agg[liman] })).sort((a, b) => b.deger - a.deger);
@@ -344,14 +391,41 @@
     if (noneBtn) noneBtn.addEventListener("click", () => onChange([avail[0]]));
   }
 
+  /* Tek seçimli düğme grubu (seri / bayrak / tip / bölge) */
+  function btnGroup(name, labelKey, opts, cur) {
+    return `<div class="filter-group"><label data-i18n="${labelKey}">${t(labelKey)}</label>
+      <div class="filter-regions">${opts.map(([v, k]) =>
+        `<button type="button" data-${name}="${v}" class="${cur === v ? "on" : ""}" data-i18n="${k}">${t(k)}</button>`).join("")}</div></div>`;
+  }
+  function wireBtnGroup(box, name, field) {
+    box.querySelectorAll("[data-" + name + "]").forEach((b) => b.addEventListener("click", () => {
+      state[field] = b.dataset[name];
+      renderFilters(); renderDash();
+    }));
+  }
+
+  const FILTER_OPTS = {
+    seri: [["toplam", "ui.total"], ["yukleme", "series.yukleme"], ["bosaltma", "series.bosaltma"]],
+    bayrak: [["toplam", "ui.all"], ["turk", "series.turk"], ["yabanci", "series.yabanci"]],
+    tip: [["tumu", "ui.all"], ["dolu", "konteyner.dolu"], ["bos", "konteyner.bos"]],
+  };
+
   function renderFiltersQuad(box) {
     const avail = curAvail();
+    const want = cfg.filters || ["years", "months"];
     let h = `<div class="filter-head">${icon(cfg.ic)} <span data-i18n="ui.filter">${t("ui.filter")}</span></div>`;
 
     h += ddBlock("years", "ui.year", yearsSummary(), years.map((y) => [y, String(y)]), state.years);
-    if (avail.length) {
+    if (want.includes("months") && avail.length) {
       h += ddBlock("months", "ui.month", monthsLabel(avail), avail.map((mo) => [mo, MON()[mo - 1]]),
         state.months, avail.map((mo) => `month.${mo}`));
+    }
+    if (want.includes("seri")) h += btnGroup("seri", "ui.series", FILTER_OPTS.seri, state.seri);
+    if (want.includes("bayrak")) h += btnGroup("bayrak", "ui.flag", FILTER_OPTS.bayrak, state.bayrak);
+    if (want.includes("tip")) h += btnGroup("tip", "ui.contType", FILTER_OPTS.tip, state.tip);
+    if (want.includes("region") && pRows().length) {
+      h += btnGroup("region", "ui.region",
+        [["all", "ui.all"]].concat(SEAS.map(([v, k]) => [v, k])), state.region);
     }
 
     h += `<a class="btn btn-ghost filter-src" href="dosyalar?kat=${cfg.arch}"><span data-i18n="ui.viewFiles">${t("ui.viewFiles")}</span> ${arrow("right")}</a>`;
@@ -359,7 +433,11 @@
 
     wireDDToggles(box);
     wireYearsDD(box);
-    wireMonthsDD(box, avail);
+    if (want.includes("months")) wireMonthsDD(box, avail);
+    wireBtnGroup(box, "seri", "seri");
+    wireBtnGroup(box, "bayrak", "bayrak");
+    wireBtnGroup(box, "tip", "tip");
+    wireBtnGroup(box, "region", "region");
   }
 
   /* Yalnız yıl filtresi — kabotaj (ay/liman kırılımı hiç yok kaynakta). */
@@ -555,14 +633,15 @@
   // Bildirimli kart hesaplama — cfg.cards'taki her girdi için değer/açıklama/not üretir.
   function computeCard(cd) {
     if (cd.type === "sum") {
-      const hv = U.human(sumSel(cd.seri));
+      const hv = U.human(sumSel(seriFor(cd.seri)));
       const mag = hv.uKey ? `<span data-i18n="${hv.uKey}">${hv.u}</span> ` : "";
       return {
         valueHtml: `${hv.v} <span class="dq-unit">${mag}<span data-i18n="${cd.unitKey}">${t(cd.unitKey)}</span></span>`,
         note: NOTE_SUM, yearly: false,
       };
     }
-    const agg = cd.type === "topPort" ? aggPorts(cd.seri) : aggCountries(cd.seri);
+    const seri = seriFor(cd.seri);
+    const agg = cd.type === "topPort" ? aggPorts(seri) : aggCountries(seri);
     const top = agg[0];
     if (!top) return { valueHtml: "—", note: "", yearly: true };
     const name = cd.type === "topPort" ? top.liman : short(top.etiket);
@@ -621,16 +700,30 @@
       if (ch.type === "monthly") {
         drawMonthlyChart(host);
       } else if (ch.type === "singleSeries") {
-        const { labels, values } = yearlySeriesFor(ch.seri);
+        const seri = seriFor(ch.seri);
+        const { labels, values } = yearlySeriesFor(seri);
         if (labels.length < 2) { host.innerHTML = `<p class="csub" data-i18n="ui.needTwoYears">${t("ui.needTwoYears")}</p>`; return; }
         C.lineArea(host, { labels, unit: t(ch.unitKey || cfg.unit),
           series: [{ name: t(ch.seriKey || ("series." + ch.seri)), color: ch.alt ? accent2 : accent, values }] });
       } else if (ch.type === "ports") {
+        const seri = seriFor(ch.seri);
         const singleYear = state.years.length === 1 ? state.years[0] : null;
-        drawPortsBars(host, aggPorts(ch.seri).slice(0, 10), ch.seri, singleYear, t(ch.unitKey || cfg.unit));
+        drawPortsBars(host, aggPorts(seri).slice(0, 10), seri, singleYear, t(ch.unitKey || cfg.unit));
       } else if (ch.type === "countries") {
+        const seri = seriFor(ch.seri);
         const singleYear = state.years.length === 1 ? state.years[0] : null;
-        drawCountriesBars(host, aggCountries(ch.seri).slice(0, 10), ch.seri, singleYear, t(ch.unitKey || cfg.unit));
+        drawCountriesBars(host, aggCountries(seri).slice(0, 10), seri, singleYear, t(ch.unitKey || cfg.unit));
+      } else if (ch.type === "regime") {
+        const REGIME_KEY = { disari: "konteyner.regimeDisari", kabotaj: "konteyner.regimeKabotaj", transit: "konteyner.regimeTransit" };
+        const palette = [accent, accent2, cs.getPropertyValue("--sky-300").trim()];
+        const items = aggRegime().map((r, i) => ({ label: t(REGIME_KEY[r.key]), value: r.deger, color: palette[i % palette.length] }));
+        if (items.length) C.donut(host, { unit: t(cfg.unit), items });
+        else host.innerHTML = `<p class="csub">—</p>`;
+      } else if (ch.type === "cins") {
+        const CINS_KEY = { "20": "konteyner.size20", "40": "konteyner.size40", "40+": "konteyner.size40plus" };
+        const items = aggCins().map((r) => ({ label: t(CINS_KEY[r.etiket]), value: r.deger, color: accent }));
+        if (items.some((x) => x.value > 0)) C.bars(host, { unit: t(cfg.unit), items });
+        else host.innerHTML = `<p class="csub">—</p>`;
       }
     });
   }
@@ -842,11 +935,16 @@
       if (tr) Object.keys(tr).forEach((y) => ys.add(+y));
     }
     if (!ys.size) ys.add(m.yil);
-    years = [...ys].sort((a, b) => b - a);
+    // yearMin: bazı sayfalarda kaynak veri belirli bir yıldan önce farklı/eksik formatta
+    // (örn. konteyner'de bayrak/rejim/cins kırılımı yalnız 2020+ tutarlı) — o yıllar listeden
+    // çıkarılır; eski toplam/yükleme/boşaltma serileri etkilenmez, sadece bu sayfada gizlenir.
+    const yFiltered = cfg.yearMin ? [...ys].filter((y) => y >= cfg.yearMin) : [...ys];
+    years = yFiltered.sort((a, b) => b - a);
 
     // defaultYearSpan yoksa (çoğu sayfa) tek en güncel yıl — eskisiyle birebir aynı davranış
     const span = cfg.defaultYearSpan || 1;
-    state = { years: years.slice(0, Math.min(span, years.length)), months: [], seri: "toplam", region: "all" };
+    state = { years: years.slice(0, Math.min(span, years.length)), months: [], seri: "toplam", region: "all",
+      tip: "tumu", bayrak: "toplam" };
     state.months = curAvail();
     closeAllDD(); // sayfa ilk açıldığında yıl/ay açılır listeleri kesin kapalı başlasın
 

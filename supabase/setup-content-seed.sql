@@ -224,3 +224,22 @@ insert into content (key, tr, en) values
 ('yuk.kpiTopCountry', 'En Çok Yük Elleçlenen Ülke', 'Top Cargo Handling Country'),
 ('yuk.kpiTopPort', 'En Çok Yük Elleçlenen Liman', 'Top Cargo Handling Port')
 on conflict (key) do nothing;
+
+-- Konteyner sayfası: 3 KPI kartı + Bayrak Türü/Konteyner Tipi filtreleri + Rejim/Cins grafikleri
+insert into content (key, tr, en) values
+('konteyner.kpiTotal', 'Toplam Konteyner Elleçleme', 'Total Container Handling'),
+('konteyner.kpiTopPort', 'En Çok Konteyner Elleçlenen Liman', 'Top Container Handling Port'),
+('konteyner.kpiTopCountry', 'En Çok Konteyner Elleçlenen Ülke', 'Top Container Handling Country'),
+('konteyner.chartRegime', 'Rejim türlerine göre dağılım', 'Breakdown by regime type'),
+('konteyner.chartCins', 'Konteyner cinslerine göre elleçleme', 'Handling by container type'),
+('konteyner.regimeDisari', 'Yurt Dışı', 'Foreign Trade'),
+('konteyner.regimeKabotaj', 'Kabotaj', 'Cabotage'),
+('konteyner.regimeTransit', 'Transit', 'Transit'),
+('konteyner.size20', '20'' lik', '20 FT'),
+('konteyner.size40', '40'' lık', '40 FT'),
+('konteyner.size40plus', '40'' dan büyük', 'Larger than 40 FT'),
+('konteyner.dolu', 'Dolu', 'Loaded'),
+('konteyner.bos', 'Boş', 'Empty'),
+('ui.flag', 'Bayrak Türü', 'Flag Type'),
+('ui.contType', 'Konteyner Tipi', 'Container Type')
+on conflict (key) do nothing;

@@ -109,3 +109,23 @@ create index idx_fact_monthly_kat   on fact_monthly (kategori);
 create index idx_fact_port_kat      on fact_port (kategori);
 create index idx_fact_country_kat   on fact_country (kategori);
 create index idx_fact_breakdown_kat on fact_breakdown (kategori, boyut);
+
+-- ============================================================
+-- Konteyner: bileşik seriler (2020-2026) — bayrak/rejim/tip kırılımı
+-- ============================================================
+-- Konteyner sayfası dashboard'unda Bayrak Türü (Türk/Yabancı), Konteyner Tipi
+-- (Dolu/Boş) ve Rejim (Kabotaj/Transit/Yurt Dışı) filtrelerini desteklemek için
+-- fact_monthly/fact_port/fact_country/fact_breakdown tablolarına yeni, BİLEŞİK
+-- adlı seriler eklendi: "{tip}__{akim}__{boyut}" (örn. "tumu__yukleme__kabotaj",
+-- "dolu__toplam__turk"). Eski toplam/yukleme/bosaltma serileri SİLİNMEDİ,
+-- yalnız 2020 öncesi yıllarda kullanılmaya devam ediyor (bkz. category.js
+-- CFG.konteyner.yearMin=2020 — bu yıllar konteyner sayfasının yıl listesinden
+-- çıkarıldı çünkü kaynak dosya formatı 2020 öncesinde farklı/eksik).
+--
+-- Kaynak: denizcilikistatistikleri.uab.gov.tr/konteyner-istatistikleri-<yıl>
+-- (Aylar/Cinsleri/Liman Başkanlıkları/Ülkeler dosyaları, her yıl için son —
+-- en kapsamlı — dosya). 28 kaynak dosyası indirilip her satır kendi dosyasının
+-- "Toplam" satırıyla ve akım özdeşlikleriyle (disarı=türk+yabancı,
+-- toplam=disarı+kabotaj+transit) doğrulandı; satır sayıları:
+-- fact_monthly +4266, fact_port +7380, fact_country +29138, fact_breakdown +756.
+-- Ingest scripti tek seferlik yerel araçtı, repoya alınmadı (service_role gerektirir).
