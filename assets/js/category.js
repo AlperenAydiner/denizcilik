@@ -21,6 +21,16 @@
                 ["Akdeniz", "sea.akdeniz"], ["Karadeniz", "sea.karadeniz"]];
   const seaKeyOf = (v) => (SEAS.find((s) => s[0] === v) || [null, v])[1];
 
+  /* Çoklu seçim açılır listesi (yıl/ay) — yalnız cfg.quad sayfalarda (gemi) kullanılır.
+     Açık/kapalı durumu yeniden çizimler arasında kalıcı olsun diye modül seviyesinde. */
+  let ddOpen = { years: false, months: false };
+  function closeAllDD() {
+    ddOpen.years = false; ddOpen.months = false;
+    document.querySelectorAll(".filter-dd-panel").forEach((p) => (p.hidden = true));
+  }
+  document.addEventListener("click", (e) => { if (!e.target.closest(".filter-dd")) closeAllDD(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAllDD(); });
+
   /* Kategori yapılandırması — seriler gerçek Excel sütunlarından türetildi */
   const CFG = {
     yuk: {
@@ -42,6 +52,7 @@
       trendKey: "gemi_gros_ton",
       series: [{ k: "turk", key: "series.turk" }, { k: "yabanci", key: "series.yabanci" }],
       split: true, splitKey: "dim.gemi.split",
+      quad: true, // seri/bölge filtresi yok; 2×2 KPI panosu (Türk/yabancı gemi + en çok gemi/GT gelen liman)
     },
     kruvaziyer: {
       ic: "kruvaziyer", accent: "--c-kruvaziyer", unit: "unit.yolcu", headKey: "kruvaziyer_yolcu", arch: "kruvaziyer",
@@ -99,7 +110,38 @@
     const r = mRows().find((x) => x.yil === y && x.ay === mo && x.seri === seri);
     return r ? r.deger : 0;
   }
-  const sumSel = (seri) => state.months.reduce((s, mo) => s + mVal(state.year, mo, seri), 0);
+  // state.years her sayfada dizi — tekli yıl sayfalarında hep 1 elemanlı. Seçili tüm
+  // yılların ay kümesinin birleşimi (çoklu yıl sayfası için gerçek "hangi aylar mevcut").
+  function curAvail() {
+    const set = new Set();
+    state.years.forEach((y) => monthsFor(y).forEach((mo) => set.add(mo)));
+    return [...set].sort((a, b) => a - b);
+  }
+  const sumSel = (seri) => state.years.reduce((tot, y) =>
+    tot + state.months.reduce((s, mo) => s + mVal(y, mo, seri), 0), 0);
+
+  // Liman bazlı toplam (fact_port'ta ay kırılımı yok — seçili yılların toplamı, yıllık).
+  function aggPorts(seri) {
+    const rows = pRows().filter((r) => r.seri === seri && state.years.includes(r.yil) && r.deger > 0);
+    const agg = {};
+    rows.forEach((r) => { agg[r.liman] = (agg[r.liman] || 0) + r.deger; });
+    return Object.keys(agg).map((liman) => ({ liman, deger: agg[liman] })).sort((a, b) => b.deger - a.deger);
+  }
+  function yearsSummary() {
+    if (state.years.length === 1) return String(state.years[0]);
+    const sorted = [...state.years].sort((a, b) => a - b);
+    if (sorted.length === years.length) return t("ui.all");
+    if (sorted.length <= 4) return sorted.join(", ");
+    return sorted.length + " " + t("ui.yearsSelected");
+  }
+  function monthsLabel(avail) {
+    if (!avail.length) return t("ui.month");
+    if (state.months.length === avail.length) return t("ui.all");
+    return state.months.length + "/" + avail.length + " " + t("ui.monthSelected");
+  }
+
+  const dashCard = (id, title, s2, key) =>
+    `<div class="dash-card"><h3${key ? ` data-i18n="${key}"` : ""}>${title}</h3>${s2 ? `<p class="csub">${s2}</p>` : ""}<div class="chart-holder" id="${id}"></div></div>`;
 
   /* ---------- İskelet ---------- */
   function skeleton() {
@@ -123,12 +165,14 @@
   /* ---------- Filtreler ---------- */
   function renderFilters() {
     const box = document.getElementById("catFilters");
-    const avail = monthsFor(state.year);
+    if (cfg.quad) return renderFiltersQuad(box);
+
+    const avail = curAvail();
     let h = `<div class="filter-head">${icon(cfg.ic)} <span data-i18n="ui.filter">${t("ui.filter")}</span></div>`;
 
     h += `<div class="filter-group"><label for="fYear" data-i18n="ui.year">${t("ui.year")}</label>
       <select class="filter-select" id="fYear">
-        ${years.map((y) => `<option value="${y}"${y === state.year ? " selected" : ""}>${y}</option>`).join("")}
+        ${years.map((y) => `<option value="${y}"${y === state.years[0] ? " selected" : ""}>${y}</option>`).join("")}
       </select></div>`;
 
     if (avail.length) {
@@ -160,8 +204,8 @@
     box.innerHTML = h;
 
     box.querySelector("#fYear").addEventListener("change", (e) => {
-      state.year = +e.target.value;
-      state.months = monthsFor(state.year);
+      state.years = [+e.target.value];
+      state.months = curAvail();
       renderFilters(); renderDash();
     });
     box.querySelectorAll("[data-month]").forEach((b) => b.addEventListener("click", () => {
@@ -171,8 +215,8 @@
       renderFilters(); renderDash();
     }));
     const bAll = box.querySelector("[data-mall]"), bNone = box.querySelector("[data-mnone]");
-    if (bAll) bAll.addEventListener("click", () => { state.months = monthsFor(state.year); renderFilters(); renderDash(); });
-    if (bNone) bNone.addEventListener("click", () => { state.months = monthsFor(state.year).slice(0, 1); renderFilters(); renderDash(); });
+    if (bAll) bAll.addEventListener("click", () => { state.months = curAvail(); renderFilters(); renderDash(); });
+    if (bNone) bNone.addEventListener("click", () => { state.months = curAvail().slice(0, 1); renderFilters(); renderDash(); });
     box.querySelectorAll("[data-seri]").forEach((b) => b.addEventListener("click", () => {
       state.seri = b.dataset.seri; renderFilters(); renderDash();
     }));
@@ -181,20 +225,103 @@
     }));
   }
 
+  /* ---------- Filtreler: çoklu seçim (gemi) ---------- */
+  function ddBlock(key, labelKey, summary, items, selected, itemI18nKeys) {
+    const open = ddOpen[key];
+    return `<div class="filter-group"><label data-i18n="${labelKey}">${t(labelKey)}</label>
+      <div class="filter-dd" data-dd="${key}">
+        <button type="button" class="filter-dd-btn" data-dd-toggle="${key}"><span>${summary}</span><span class="dd-chev">▾</span></button>
+        <div class="filter-dd-panel" ${open ? "" : "hidden"}>
+          <div class="filter-dd-actions">
+            <button type="button" data-dd-all="${key}" data-i18n="ui.all">${t("ui.all")}</button>
+            <button type="button" data-dd-none="${key}" data-i18n="ui.clear">${t("ui.clear")}</button>
+          </div>
+          <div class="filter-dd-list">
+            ${items.map(([v, label], i) => `<label class="filter-dd-item"><input type="checkbox" data-dd-item="${key}" value="${v}" ${selected.includes(v) ? "checked" : ""}><span${itemI18nKeys ? ` data-i18n="${itemI18nKeys[i]}"` : ""}>${label}</span></label>`).join("")}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function wireDDToggles(box) {
+    box.querySelectorAll("[data-dd-toggle]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const key = btn.dataset.ddToggle;
+        const willOpen = !ddOpen[key];
+        closeAllDD();
+        if (willOpen) {
+          ddOpen[key] = true;
+          const panel = btn.parentElement.querySelector(".filter-dd-panel");
+          if (panel) panel.hidden = false;
+        }
+      });
+    });
+  }
+
+  function wireYearsDD(box) {
+    const onChange = (list) => {
+      state.years = list.length ? list.sort((a, b) => b - a) : [years[0]];
+      const av = curAvail();
+      state.months = state.months.filter((mo) => av.includes(mo));
+      if (!state.months.length) state.months = av;
+      renderFilters(); renderDash();
+    };
+    box.querySelectorAll("[data-dd-item='years']").forEach((cb) => cb.addEventListener("change", () =>
+      onChange([...box.querySelectorAll("[data-dd-item='years']:checked")].map((x) => +x.value))));
+    const allBtn = box.querySelector("[data-dd-all='years']"), noneBtn = box.querySelector("[data-dd-none='years']");
+    if (allBtn) allBtn.addEventListener("click", () => onChange([...years]));
+    if (noneBtn) noneBtn.addEventListener("click", () => onChange([years[0]]));
+  }
+
+  function wireMonthsDD(box, avail) {
+    const onChange = (list) => {
+      state.months = list.length ? list.sort((a, b) => a - b) : [avail[0]];
+      renderFilters(); renderDash();
+    };
+    box.querySelectorAll("[data-dd-item='months']").forEach((cb) => cb.addEventListener("change", () =>
+      onChange([...box.querySelectorAll("[data-dd-item='months']:checked")].map((x) => +x.value))));
+    const allBtn = box.querySelector("[data-dd-all='months']"), noneBtn = box.querySelector("[data-dd-none='months']");
+    if (allBtn) allBtn.addEventListener("click", () => onChange([...avail]));
+    if (noneBtn) noneBtn.addEventListener("click", () => onChange([avail[0]]));
+  }
+
+  function renderFiltersQuad(box) {
+    const avail = curAvail();
+    let h = `<div class="filter-head">${icon(cfg.ic)} <span data-i18n="ui.filter">${t("ui.filter")}</span></div>`;
+
+    h += ddBlock("years", "ui.year", yearsSummary(), years.map((y) => [y, String(y)]), state.years);
+    if (avail.length) {
+      h += ddBlock("months", "ui.month", monthsLabel(avail), avail.map((mo) => [mo, MON()[mo - 1]]),
+        state.months, avail.map((mo) => `month.${mo}`));
+    }
+
+    h += `<a class="btn btn-ghost filter-src" href="dosyalar?kat=${cfg.arch}"><span data-i18n="ui.viewFiles">${t("ui.viewFiles")}</span> ${arrow("right")}</a>`;
+    box.innerHTML = h;
+
+    wireDDToggles(box);
+    wireYearsDD(box);
+    wireMonthsDD(box, avail);
+  }
+
   /* ---------- Dashboard ---------- */
   function renderDash() {
     const box = document.getElementById("catDash");
-    const avail = monthsFor(state.year), unit = t(cfg.unit);
+    if (cfg.quad) return renderDashQuad(box);
+
+    const avail = curAvail(), unit = t(cfg.unit);
     const partial = avail.length && state.months.length < avail.length;
+    const y0 = state.years[0];
 
     let val, sub;
     if (avail.length) {
       val = sumSel(state.seri);
-      sub = `${state.year} · ${state.months.map((x) => MON()[x - 1]).join(", ")}`;
+      sub = `${y0} · ${state.months.map((x) => MON()[x - 1]).join(", ")}`;
     } else {
       const tr = cfg.trendKey && T[cfg.trendKey];
-      val = (tr && tr[state.year]) || m.deger;
-      sub = String(state.year);
+      val = (tr && tr[y0]) || m.deger;
+      sub = String(y0);
     }
     const hv = U.human(val);
     const sObj = cfg.series.find((s) => s.k === state.seri);
@@ -202,8 +329,8 @@
     const seriName = seriKey ? t(seriKey) : "";
 
     let delta = "";
-    if (avail.length && monthsFor(state.year - 1).length) {
-      const prev = state.months.reduce((s, mo) => s + mVal(state.year - 1, mo, state.seri), 0);
+    if (avail.length && monthsFor(y0 - 1).length) {
+      const prev = state.months.reduce((s, mo) => s + mVal(y0 - 1, mo, state.seri), 0);
       if (prev > 0) {
         const pct = ((val - prev) / prev) * 100, up = pct >= 0;
         delta = `<span class="kpi-delta ${up ? "up" : "down"}">${up ? arrow("up") : arrow("down")} %${Math.abs(pct).toFixed(1).replace(".", ",")}</span>`;
@@ -213,23 +340,79 @@
     const magSpan = hv.uKey ? `<span data-i18n="${hv.uKey}">${hv.u}</span> ` : "";
     const head = `<div class="dash-stat" style="--kc:${accent}">
       <div class="ds-top"><span class="ds-ic">${icon(cfg.ic)}</span>
-        <span class="ds-label"${seriKey ? ` data-i18n="${seriKey}"` : ""}>${seriName}</span>${delta || `<span class="kpi-year">${state.year}</span>`}</div>
+        <span class="ds-label"${seriKey ? ` data-i18n="${seriKey}"` : ""}>${seriName}</span>${delta || `<span class="kpi-year">${y0}</span>`}</div>
       <div class="ds-num" data-derived="Bu toplam, seçili ayların veritabanındaki değerlerinden hesaplanıyor. Değiştirmek için aşağıdaki “aylara göre dağılım” grafiğinde ilgili sütuna tıkla.">${hv.v} <span class="ds-unit">${magSpan}<span data-i18n="${cfg.unit}">${unit}</span></span></div>
       <div class="ds-sub">${sub}${partial ? " · " + t("ui.partial") : ""}</div>
     </div>`;
 
-    const card = (id, title, s2, key) =>
-      `<div class="dash-card"><h3${key ? ` data-i18n="${key}"` : ""}>${title}</h3>${s2 ? `<p class="csub">${s2}</p>` : ""}<div class="chart-holder" id="${id}"></div></div>`;
+    let cards = "";
+    if (avail.length) cards += dashCard("dMonth", t("cat.monthTitle"), `${y0} · ${unit}`, "cat.monthTitle");
+    if (catTrend()) cards += dashCard("dTrend", t("cat.trendTitle"), unit, "cat.trendTitle");
+    if (cfg.dual) cards += dashCard("dDual", t("cat.trendTitle"), "", "cat.trendTitle");
+    if (pRows().length) cards += dashCard("dPorts", t("cat.portsTitle") + (state.region !== "all" ? " — " + t(seaKeyOf(state.region)) : ""), `${y0} · ${unit}`);
+    if (cfg.split && cfg.series.length > 1)
+      cards += dashCard("dSplit", t(cfg.splitKey || "ui.split"), String(y0), cfg.splitKey || "ui.split");
+    if (cfg.donut && bRows().some((r) => r.boyut === cfg.donut.dim)) cards += dashCard("dDonut", t(cfg.donut.key), unit, cfg.donut.key);
+    if (cfg.barsDim && bRows().some((r) => r.boyut === cfg.barsDim.dim)) cards += dashCard("dBars", t(cfg.barsDim.key), unit, cfg.barsDim.key);
+
+    box.innerHTML = head + `<div class="dash-cards">${cards}</div>`;
+    setTimeout(draw, 40);
+  }
+
+  /* ---------- Dashboard: 2×2 KPI panosu (gemi) ---------- */
+  function renderDashQuad(box) {
+    const avail = curAvail(), unit = t(cfg.unit);
+    const partial = avail.length && state.months.length < avail.length;
+
+    const turk = sumSel("turk"), yabanci = sumSel("yabanci");
+    const topCount = aggPorts("toplam")[0];
+    const topGt = aggPorts("toplam_gt")[0];
+
+    const ysum = yearsSummary();
+    const monthsTxt = avail.length ? state.months.map((x) => MON()[x - 1]).join(", ") : "";
+    const subCounts = `${ysum}${monthsTxt ? " · " + monthsTxt : ""}${partial ? " · " + t("ui.partial") : ""}`;
+    const subYearly = `${ysum} · <span data-i18n="ui.yearlyTotal">${t("ui.yearlyTotal")}</span>`;
+
+    const NOTE_COUNT = "Bu toplam, seçili yıl(lar) ve ayların veritabanındaki değerlerinden hesaplanıyor. Değiştirmek için aşağıdaki “aylara göre dağılım” grafiğinde ilgili sütuna tıkla.";
+    const NOTE_PORT = "Bu değer, seçili yıllardaki liman toplamlarından hesaplanıyor. Değiştirmek için aşağıdaki “limanlara göre dağılım” grafiğinde ilgili sütuna tıkla.";
+
+    const dq = (labelKey, valueHtml, sub, note) =>
+      `<div class="dq-card" style="--kc:${accent}">
+        <div class="dq-ic">${icon(cfg.ic)}</div>
+        <div class="dq-label" data-i18n="${labelKey}">${t(labelKey)}</div>
+        <div class="dq-num"${note ? ` data-derived="${note}"` : ""}>${valueHtml}</div>
+        <div class="dq-sub">${sub}</div>
+      </div>`;
+
+    const hvT = U.human(turk), hvY = U.human(yabanci);
+    const magT = hvT.uKey ? `<span data-i18n="${hvT.uKey}">${hvT.u}</span> ` : "";
+    const magY = hvY.uKey ? `<span data-i18n="${hvY.uKey}">${hvY.u}</span> ` : "";
+
+    const cardTurk = dq("gemi.kpiTurk",
+      `${hvT.v} <span class="dq-unit">${magT}<span data-i18n="${cfg.unit}">${unit}</span></span>`, subCounts, NOTE_COUNT);
+    const cardYab = dq("gemi.kpiYabanci",
+      `${hvY.v} <span class="dq-unit">${magY}<span data-i18n="${cfg.unit}">${unit}</span></span>`, subCounts, NOTE_COUNT);
+    const hvP = topCount ? U.human(topCount.deger) : null;
+    const magP = hvP && hvP.uKey ? `<span data-i18n="${hvP.uKey}">${hvP.u}</span> ` : "";
+    const cardTopPort = topCount
+      ? dq("gemi.kpiTopPort", `<span class="dq-port">${topCount.liman}</span>${hvP.v} <span class="dq-unit">${magP}<span data-i18n="${cfg.unit}">${unit}</span></span>`, subYearly, NOTE_PORT)
+      : dq("gemi.kpiTopPort", "—", subYearly, "");
+    const hvG = topGt ? U.human(topGt.deger) : null;
+    const magG = hvG && hvG.uKey ? `<span data-i18n="${hvG.uKey}">${hvG.u}</span> ` : "";
+    const cardTopGt = topGt
+      ? dq("gemi.kpiTopPortGt", `<span class="dq-port">${topGt.liman}</span>${hvG.v} <span class="dq-unit">${magG}<span data-i18n="unit.grosston">${t("unit.grosston")}</span></span>`, subYearly, NOTE_PORT)
+      : dq("gemi.kpiTopPortGt", "—", subYearly, "");
+
+    const head = `<div class="dash-quad">${cardTurk}${cardYab}${cardTopPort}${cardTopGt}</div>`;
+
+    const capped = state.years.length > 10;
+    const capNote = capped ? (lang() === "en" ? " · showing most recent 10 years" : " · en güncel 10 yıl gösteriliyor") : "";
 
     let cards = "";
-    if (avail.length) cards += card("dMonth", t("cat.monthTitle"), `${state.year} · ${unit}`, "cat.monthTitle");
-    if (catTrend()) cards += card("dTrend", t("cat.trendTitle"), unit, "cat.trendTitle");
-    if (cfg.dual) cards += card("dDual", t("cat.trendTitle"), "", "cat.trendTitle");
-    if (pRows().length) cards += card("dPorts", t("cat.portsTitle") + (state.region !== "all" ? " — " + t(seaKeyOf(state.region)) : ""), `${state.year} · ${unit}`);
-    if (cfg.split && cfg.series.length > 1)
-      cards += card("dSplit", t(cfg.splitKey || "ui.split"), String(state.year), cfg.splitKey || "ui.split");
-    if (cfg.donut && bRows().some((r) => r.boyut === cfg.donut.dim)) cards += card("dDonut", t(cfg.donut.key), unit, cfg.donut.key);
-    if (cfg.barsDim && bRows().some((r) => r.boyut === cfg.barsDim.dim)) cards += card("dBars", t(cfg.barsDim.key), unit, cfg.barsDim.key);
+    if (avail.length) cards += dashCard("dMonth", t("cat.monthTitle"), `${ysum} · ${unit}${capNote}`, "cat.monthTitle");
+    if (catTrend()) cards += dashCard("dTrend", t("cat.trendTitle"), unit, "cat.trendTitle");
+    if (pRows().length) cards += dashCard("dPorts", t("cat.portsTitle"), `${ysum} · ${unit}`, "cat.portsTitle");
+    if (cfg.split && cfg.series.length > 1) cards += dashCard("dSplit", t(cfg.splitKey || "ui.split"), ysum, cfg.splitKey || "ui.split");
 
     box.innerHTML = head + `<div class="dash-cards">${cards}</div>`;
     setTimeout(draw, 40);
@@ -240,12 +423,13 @@
     return (i) => {
       const mo = avail[i];
       if (mo == null) return null;
-      const l = `${MON()[mo - 1]} ${state.year} · ${seriName}`;
+      const y = state.years[0];
+      const l = `${MON()[mo - 1]} ${y} · ${seriName}`;
       if (cat === "bogazlar") {
-        return { t: "fact_strait", m: { bogaz: "istanbul", yil: state.year, ay: mo },
+        return { t: "fact_strait", m: { bogaz: "istanbul", yil: y, ay: mo },
                  f: seriKey === "gros_ton" ? "gros_ton" : "gemi_adedi", l, k: "num" };
       }
-      return { t: "fact_monthly", m: { kategori: cat, yil: state.year, ay: mo, seri: seriKey },
+      return { t: "fact_monthly", m: { kategori: cat, yil: y, ay: mo, seri: seriKey },
                f: "deger", l, k: "num" };
     };
   }
@@ -268,7 +452,7 @@
   }
 
   function draw() {
-    const unit = t(cfg.unit), avail = monthsFor(state.year);
+    const unit = t(cfg.unit), avail = curAvail();
     const cs = getComputedStyle(document.documentElement);
     const palette = ["--c-yuk", "--c-konteyner", "--c-gemi", "--c-kruvaziyer", "--c-roro", "--c-bogaz"]
       .map((v) => cs.getPropertyValue(v).trim());
@@ -277,14 +461,30 @@
 
     const mh = document.getElementById("dMonth");
     if (mh && avail.length) {
-      const labels = avail.map((x) => MON()[x - 1]);
-      const series = cfg.series.length
-        ? cfg.series.map((s, i) => ({ name: nm(s), color: ramp[i % ramp.length],
-            values: avail.map((mo) => mVal(state.year, mo, s.k)),
-            edit: monthEdit(avail, s.k, nm(s)) }))
-        : [{ name: t("ui.total"), color: accent, values: avail.map((mo) => mVal(state.year, mo, "toplam")),
-            edit: monthEdit(avail, "toplam", t("ui.total")) }];
-      C.columns(mh, { labels, series, unit, stacked: cfg.series.length > 1 });
+      if (cfg.quad && state.years.length > 1) {
+        // Çoklu yıl: her yıl ayrı seri (Türk/yabancı ayrımı olmadan toplam) — N×2 seri yerine
+        // okunur kalsın diye, en fazla en yeni 10 yıl çizilir.
+        const yrsSorted = [...state.years].sort((a, b) => b - a).slice(0, 10);
+        const labels = avail.map((x) => MON()[x - 1]);
+        const series = yrsSorted.map((y, i) => ({
+          name: String(y), color: palette[i % palette.length],
+          values: avail.map((mo) => mVal(y, mo, "toplam")),
+          edit: (idx) => { const mo = avail[idx]; return mo == null ? null : { t: "fact_monthly",
+            m: { kategori: cat, yil: y, ay: mo, seri: "toplam" }, f: "deger",
+            l: `${MON()[mo - 1]} ${y} · ${t("ui.total")}`, k: "num" }; },
+        }));
+        C.lineArea(mh, { labels, unit, series });
+      } else {
+        const y = state.years[0];
+        const labels = avail.map((x) => MON()[x - 1]);
+        const series = cfg.series.length
+          ? cfg.series.map((s, i) => ({ name: nm(s), color: ramp[i % ramp.length],
+              values: avail.map((mo) => mVal(y, mo, s.k)),
+              edit: monthEdit(avail, s.k, nm(s)) }))
+          : [{ name: t("ui.total"), color: accent, values: avail.map((mo) => mVal(y, mo, "toplam")),
+              edit: monthEdit(avail, "toplam", t("ui.total")) }];
+        C.columns(mh, { labels, series, unit, stacked: cfg.series.length > 1 });
+      }
     }
 
     const th = document.getElementById("dTrend");
@@ -315,20 +515,30 @@
 
     const ph = document.getElementById("dPorts");
     if (ph) {
-      const seri = cfg.series.length && state.seri !== "toplam" ? state.seri : "toplam";
-      const yrs = [...new Set(pRows().filter((r) => r.seri === seri).map((r) => r.yil))];
-      const useYear = yrs.includes(state.year) ? state.year : Math.max(...yrs);
-      let rows = pRows().filter((r) => r.yil === useYear && r.seri === seri && r.deger > 0);
-      if (state.region !== "all") {
-        const inR = new Set(P.filter((p) => p.sea === state.region).map((p) => p.name));
-        rows = rows.filter((r) => inR.has(r.liman));
+      let top, singleYear;
+      if (cfg.quad) {
+        // Çoklu yıl olabilir → toplamı liman bazında birleştirilir; tek yıl seçiliyse
+        // hâlâ tek satıra karşılık geldiği için düzenlenebilir kalır.
+        top = aggPorts("toplam").slice(0, 10);
+        singleYear = state.years.length === 1 ? state.years[0] : null;
+      } else {
+        const seri = cfg.series.length && state.seri !== "toplam" ? state.seri : "toplam";
+        const yrs = [...new Set(pRows().filter((r) => r.seri === seri).map((r) => r.yil))];
+        const useYear = yrs.includes(state.years[0]) ? state.years[0] : Math.max(...yrs);
+        let rows = pRows().filter((r) => r.yil === useYear && r.seri === seri && r.deger > 0);
+        if (state.region !== "all") {
+          const inR = new Set(P.filter((p) => p.sea === state.region).map((p) => p.name));
+          rows = rows.filter((r) => inR.has(r.liman));
+        }
+        top = rows.sort((a, b) => b.deger - a.deger).slice(0, 10).map((r) => ({ liman: r.liman, deger: r.deger }));
+        singleYear = useYear;
       }
-      const top = rows.sort((a, b) => b.deger - a.deger).slice(0, 10);
       if (top.length) C.bars(ph, { unit, items: top.map((r) => {
-        const m = { kategori: cat, yil: useYear, liman: r.liman, seri: seri };
+        if (singleYear == null) return { label: r.liman, value: r.deger, color: accent };
+        const m = { kategori: cat, yil: singleYear, liman: r.liman, seri: "toplam" };
         return {
           label: r.liman, value: r.deger, color: accent,
-          edit: { t: "fact_port", m: m, f: "deger", l: `${r.liman} · ${useYear}`, k: "num" },
+          edit: { t: "fact_port", m: m, f: "deger", l: `${r.liman} · ${singleYear}`, k: "num" },
           editLabel: { t: "fact_port", m: m, f: "liman", l: `${r.liman} — ad`, k: "text", w: RENAME_WARN },
         };
       }) });
@@ -464,8 +674,8 @@
     if (!ys.size) ys.add(m.yil);
     years = [...ys].sort((a, b) => b - a);
 
-    state = { year: years[0], months: [], seri: "toplam", region: "all" };
-    state.months = monthsFor(state.year);
+    state = { years: [years[0]], months: [], seri: "toplam", region: "all" };
+    state.months = curAvail();
 
     skeleton(); renderFilters(); renderDash(); renderArchive();
     window.MDScan && window.MDScan();

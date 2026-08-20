@@ -100,6 +100,13 @@
       "dim.kabotaj.a": "Yolcu", "dim.kabotaj.b": "Araç",
       "dim.filo.bars": "Gemi cinsine göre", "dim.filo.donut": "Filo bileşimi",
 
+      "gemi.kpiTurk": "Limanlarımıza uğrayan Türk bayraklı gemi sayısı",
+      "gemi.kpiYabanci": "Limanlarımıza uğrayan yabancı bayraklı gemi sayısı",
+      "gemi.kpiTopPort": "En çok gemi uğrayan liman başkanlığı",
+      "gemi.kpiTopPortGt": "En çok gross tonaj gelen liman başkanlığı",
+      "ui.yearlyTotal": "yıllık toplam",
+      "ui.yearsSelected": "yıl seçili",
+
       "nav.uab": "UAB.GOV.TR",
       "url.uab": "https://www.uab.gov.tr",
       "url.dgm": "https://denizcilik.uab.gov.tr/",
@@ -206,6 +213,13 @@
       "dim.roro.split": "Vehicle direction", "dim.roro.bars": "By vehicle type",
       "dim.kabotaj.a": "Passengers", "dim.kabotaj.b": "Vehicles",
       "dim.filo.bars": "By ship type", "dim.filo.donut": "Fleet composition",
+
+      "gemi.kpiTurk": "Turkish-flagged vessels calling at our ports",
+      "gemi.kpiYabanci": "Foreign-flagged vessels calling at our ports",
+      "gemi.kpiTopPort": "Port authority with the most vessel calls",
+      "gemi.kpiTopPortGt": "Port authority with the highest gross tonnage",
+      "ui.yearlyTotal": "yearly total",
+      "ui.yearsSelected": "years selected",
 
       "nav.uab": "UAB.GOV.TR",
       "url.uab": "https://www.uab.gov.tr",

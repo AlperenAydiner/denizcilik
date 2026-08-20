@@ -136,6 +136,8 @@
     home: "Anasayfa yazısı", kpi: "Kart başlığı", unit: "Birim", num: "Sayı birimi",
     cat: "Sayfa başlığı", files: "Dosyalar sayfası", map: "Harita sayfası",
     contact: "İletişim bilgisi", footer: "Alt bilgi",
+    gemi: "Kart açıklaması", series: "Seri adı", sea: "Deniz bölgesi", dim: "Grafik başlığı",
+    month: "Ay adı",
   };
   const friendly = (key) => KEY_LABELS[String(key).split(".")[0]] || "Bu yazı";
 

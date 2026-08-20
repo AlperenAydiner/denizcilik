@@ -979,3 +979,47 @@ body::after {
 }
 .filter-months button:hover { border-color: var(--accent); color: var(--text); }
 .filter-months button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* Çoklu seçim açılır listesi (yıl/ay) — gemi sayfası */
+.filter-dd { position: relative; }
+.filter-dd-btn {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 12px; border-radius: 10px; font: inherit; font-size: .92rem; font-weight: 600;
+  background: var(--bg-alt); border: 1px solid var(--border); color: var(--text); cursor: pointer; text-align: left;
+}
+.filter-dd-btn:hover { border-color: var(--accent); }
+.filter-dd-btn span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dd-chev { font-size: .7rem; color: var(--text-dim); flex: none; }
+.filter-dd-panel {
+  position: absolute; z-index: 12; top: calc(100% + 6px); left: 0; right: 0;
+  background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px;
+  box-shadow: var(--shadow); padding: 10px; max-height: 260px; display: flex; flex-direction: column; gap: 8px;
+}
+.filter-dd-actions { display: flex; gap: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.filter-dd-actions button {
+  background: none; border: none; color: var(--accent); font-size: .76rem; font-weight: 600; padding: 2px 4px;
+}
+.filter-dd-actions button:hover { text-decoration: underline; }
+.filter-dd-list { overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.filter-dd-item {
+  display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 7px;
+  font-size: .86rem; color: var(--text); cursor: pointer; transition: background .15s;
+}
+.filter-dd-item:hover { background: var(--surface-2); }
+.filter-dd-item input { accent-color: var(--accent); cursor: pointer; }
+
+/* Gemi sayfası: tekli büyük kart yerine 2×2 KPI ızgarası */
+.dash-quad { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.dq-card {
+  position: relative; overflow: hidden; padding: 20px 22px; border-radius: var(--radius-lg);
+  background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-soft);
+}
+.dq-card::before { content: ""; position: absolute; left: 0; top: 0; width: 4px; height: 100%; background: var(--kc, var(--accent)); }
+.dq-ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: var(--kc); background: color-mix(in srgb, var(--kc) 12%, transparent); }
+.dq-ic svg { width: 18px; height: 18px; }
+.dq-label { margin-top: 12px; font-weight: 600; font-size: .86rem; color: var(--text-soft); line-height: 1.35; }
+.dq-num { margin-top: 10px; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.4rem, 2.3vw, 2rem); letter-spacing: -0.02em; color: var(--white); line-height: 1.2; }
+.dq-unit { font-size: .82rem; font-weight: 600; color: var(--text-soft); }
+.dq-port { display: block; font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; color: var(--white); }
+.dq-sub { margin-top: 8px; font-size: .82rem; color: var(--text-dim); }
+@media (max-width: 560px) { .dash-quad { grid-template-columns: 1fr; } }

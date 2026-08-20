@@ -178,3 +178,13 @@ insert into content (key, tr, en) values
 ('url.mail', 'mailto:denizcilik@uab.gov.tr', 'mailto:denizcilik@uab.gov.tr'),
 ('home.year', '', '')
 on conflict (key) do nothing;
+
+-- Gemi sayfası 2×2 KPI panosu (sonradan eklendi)
+insert into content (key, tr, en) values
+('gemi.kpiTurk', 'Limanlarımıza uğrayan Türk bayraklı gemi sayısı', 'Turkish-flagged vessels calling at our ports'),
+('gemi.kpiYabanci', 'Limanlarımıza uğrayan yabancı bayraklı gemi sayısı', 'Foreign-flagged vessels calling at our ports'),
+('gemi.kpiTopPort', 'En çok gemi uğrayan liman başkanlığı', 'Port authority with the most vessel calls'),
+('gemi.kpiTopPortGt', 'En çok gross tonaj gelen liman başkanlığı', 'Port authority with the highest gross tonnage'),
+('ui.yearlyTotal', 'yıllık toplam', 'yearly total'),
+('ui.yearsSelected', 'yıl seçili', 'years selected')
+on conflict (key) do nothing;
