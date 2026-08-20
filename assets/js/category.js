@@ -135,6 +135,21 @@
     rows.forEach((r) => { agg[r.liman] = (agg[r.liman] || 0) + r.deger; });
     return Object.keys(agg).map((liman) => ({ liman, deger: agg[liman] })).sort((a, b) => b.deger - a.deger);
   }
+  // Ardışık ayları "Oca-Tem" gibi aralığa sıkıştırır; ardışık olmayanları virgülle ayırır
+  // (örn. [1,2,3,6,7] → "Oca-Mar, Haz-Tem"). Genel amaçlı — başka sayfalarda da kullanılabilir.
+  function compressMonths(mos) {
+    if (!mos.length) return "";
+    const sorted = [...mos].sort((a, b) => a - b);
+    const runs = [];
+    let start = sorted[0], prev = sorted[0];
+    for (let i = 1; i <= sorted.length; i++) {
+      const cur = sorted[i];
+      if (cur === prev + 1) { prev = cur; continue; }
+      runs.push([start, prev]);
+      start = cur; prev = cur;
+    }
+    return runs.map(([a, b]) => (a === b ? MON()[a - 1] : `${MON()[a - 1]}-${MON()[b - 1]}`)).join(", ");
+  }
   // Seçili yılların her biri için seçili ayların toplamı (küçükten büyüğe) — gemi Türk/Yabancı trend grafiği.
   function yearlySeriesFor(seri) {
     const ys = [...state.years].sort((a, b) => a - b);
@@ -394,7 +409,7 @@
     const topGt = aggPorts("toplam_gt")[0];
 
     const ysum = yearsSummary();
-    const monthsTxt = avail.length ? state.months.map((x) => MON()[x - 1]).join(", ") : "";
+    const monthsTxt = compressMonths(state.months);
     const subCounts = `${ysum}${monthsTxt ? " · " + monthsTxt : ""}${partial ? " · " + t("ui.partial") : ""}`;
     const subYearly = `${ysum} · <span data-i18n="ui.yearlyTotal">${t("ui.yearlyTotal")}</span>`;
 
