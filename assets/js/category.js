@@ -105,7 +105,7 @@
   function skeleton() {
     host.innerHTML = `
     <section class="page-hero"><div class="wrap">
-      <div class="breadcrumb"><a href="index.html" data-i18n="nav.home">${t("nav.home")}</a> ${arrow("right")} <span data-i18n="cat.${cat}">${t("cat." + cat)}</span></div>
+      <div class="breadcrumb"><a href="./" data-i18n="nav.home">${t("nav.home")}</a> ${arrow("right")} <span data-i18n="cat.${cat}">${t("cat." + cat)}</span></div>
       <div class="page-title">
         <span class="page-icon" style="color:${accent}">${icon(cfg.ic)}</span>
         <h1 data-i18n="cat.${cat}">${t("cat." + cat)}</h1>
@@ -156,7 +156,7 @@
       </div></div>`;
     }
 
-    h += `<a class="btn btn-ghost filter-src" href="dosyalar.html?kat=${cfg.arch}"><span data-i18n="ui.viewFiles">${t("ui.viewFiles")}</span> ${arrow("right")}</a>`;
+    h += `<a class="btn btn-ghost filter-src" href="dosyalar?kat=${cfg.arch}"><span data-i18n="ui.viewFiles">${t("ui.viewFiles")}</span> ${arrow("right")}</a>`;
     box.innerHTML = h;
 
     box.querySelector("#fYear").addEventListener("change", (e) => {
@@ -376,7 +376,7 @@
     if (!box) return;
     if (!a) { box.innerHTML = ""; return; }
     const total = Object.values(a.yillar).reduce((s, v) => s + v.length, 0);
-    box.innerHTML = `<a class="files-cta" href="dosyalar.html?kat=${cfg.arch}">
+    box.innerHTML = `<a class="files-cta" href="dosyalar?kat=${cfg.arch}">
       <span class="fc-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 3v5h5M7 3h8l5 5v11a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/></svg></span>
       <span class="fc-tx"><b data-i18n="ui.viewFiles">${t("ui.viewFiles")}</b><span>${total.toLocaleString(loc)} <span data-i18n="ui.files">${t("ui.files")}</span></span></span>
       ${arrow("right")}</a>`;

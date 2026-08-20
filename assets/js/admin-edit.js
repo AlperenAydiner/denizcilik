@@ -113,19 +113,23 @@
   }
 
   /* ---------- Sayfalar (üst şerit menüsü) ---------- */
+  // Adresler artık uzantısız (index → "./"); eski .html bağlantıları da
+  // çalışmaya devam eder, sayfa kimliği ikisini de aynı şeye indirger.
+  const pageId = (p) =>
+    ((p || "").split(/[?#]/)[0].split("/").pop() || "index").replace(/\.html$/, "") || "index";
   const PAGES = [
-    ["index.html", "Anasayfa"],
-    ["yuk.html", "Yük"],
-    ["konteyner.html", "Konteyner"],
-    ["bogazlar.html", "Türk Boğazları"],
-    ["kabotaj.html", "Kabotaj Hattı"],
-    ["kruvaziyer.html", "Kruvaziyer"],
-    ["roro.html", "RO-RO Araç"],
-    ["gemi.html", "Gemi"],
-    ["filo.html", "Filo"],
-    ["harita.html", "Harita"],
-    ["dosyalar.html", "Dosyalar"],
-    ["iletisim.html", "İletişim"],
+    ["./", "index", "Anasayfa"],
+    ["yuk", "yuk", "Yük"],
+    ["konteyner", "konteyner", "Konteyner"],
+    ["bogazlar", "bogazlar", "Türk Boğazları"],
+    ["kabotaj", "kabotaj", "Kabotaj Hattı"],
+    ["kruvaziyer", "kruvaziyer", "Kruvaziyer"],
+    ["roro", "roro", "RO-RO Araç"],
+    ["gemi", "gemi", "Gemi"],
+    ["filo", "filo", "Filo"],
+    ["harita", "harita", "Harita"],
+    ["dosyalar", "dosyalar", "Dosyalar"],
+    ["iletisim", "iletisim", "İletişim"],
   ];
 
   /* Anahtar adı yerine insan dili — "home.title" değil "Anasayfa yazısı" */
@@ -137,7 +141,7 @@
   };
   const friendly = (key) => KEY_LABELS[String(key).split(".")[0]] || "Bu yazı";
 
-  const currentPage = location.pathname.split("/").pop() || "index.html";
+  const currentPage = pageId(location.pathname);
   const inShell = new URLSearchParams(location.search).get("edit") === "1";
 
   const ICON = {
@@ -163,26 +167,26 @@
   function sessionLost() {
     closePopover();
     showToast("Oturumun sona ermiş. Tekrar giriş yapman gerekiyor.", "err");
-    setTimeout(() => { location.href = "admin.html"; }, 1800);
+    setTimeout(() => { location.href = "admin"; }, 1800);
   }
 
   /* ---------- Üst şerit ---------- */
   function buildBar() {
     const bar = document.createElement("div");
     bar.id = "mdEditBar";
-    const known = PAGES.some((p) => p[0] === currentPage);
+    const known = PAGES.some((p) => p[1] === currentPage);
     bar.innerHTML = `
       <span class="meb-brand">${ICON.pencil}<span>Düzenleme modu</span></span>
       <label class="meb-page">Sayfa
         <select id="mdEditPage">
           ${known ? "" : `<option value="" selected>(bu sayfa)</option>`}
-          ${PAGES.map(([f, n]) =>
-            `<option value="${f}"${f === currentPage ? " selected" : ""}>${n}</option>`).join("")}
+          ${PAGES.map(([href, id, n]) =>
+            `<option value="${href}"${id === currentPage ? " selected" : ""}>${n}</option>`).join("")}
         </select>
       </label>
       <span class="meb-hint">Değiştirmek istediğin yazıya tıkla</span>
       <span class="meb-spacer"></span>
-      <a class="meb-link" href="admin.html?gelismis=1">${ICON.gear}<span>Gelişmiş</span></a>
+      <a class="meb-link" href="admin?gelismis=1">${ICON.gear}<span>Gelişmiş</span></a>
       <span class="meb-user">${(session.user && session.user.email) || ""}</span>
       <button type="button" class="meb-out" id="mdEditLogout">Çıkış</button>`;
     document.body.appendChild(bar);
@@ -198,7 +202,7 @@
         });
       } catch { /* çevrimdışı olsa da yerel oturumu temizle */ }
       localStorage.removeItem(SESSION_KEY);
-      location.href = "index.html";
+      location.href = "./";
     });
   }
 

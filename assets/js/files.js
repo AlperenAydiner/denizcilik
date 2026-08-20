@@ -1,6 +1,6 @@
 /* ============================================================
    files.js — Dosyalar sayfası: kategori sekmeleri, yıl grupları, arama
-   URL ile derin bağlantı: dosyalar.html?kat=yuk
+   URL ile derin bağlantı: dosyalar?kat=yuk
    ============================================================ */
 (async function () {
   "use strict";

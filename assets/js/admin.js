@@ -19,7 +19,7 @@
   async function refreshSession() {
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
-      if (!SHOW_TABLES) { location.replace("index.html?edit=1"); return; }
+      if (!SHOW_TABLES) { location.replace("./?edit=1"); return; }
       $("loginBox").hidden = true;
       $("adminBox").hidden = false;
       $("whoAmI").innerHTML = `${session.user.email} <button type="button" id="pwBtn" class="admin-linklike">şifre belirle/değiştir</button>`;

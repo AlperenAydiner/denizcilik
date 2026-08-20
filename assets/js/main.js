@@ -122,11 +122,15 @@
   }
 
   /* ---------- Aktif menü işaretle ---------- */
+  // Adres .html'li veya uzantısız olabilir (eski bağlantılar hâlâ çalışır) —
+  // ikisini de aynı sayfa kimliğine indirger, layout.js'teki pageId ile birebir.
+  const pageId = (p) =>
+    ((p || "").split(/[?#]/)[0].split("/").pop() || "index").replace(/\.html$/, "") || "index";
   function markActive() {
-    const path = location.pathname.split("/").pop() || "index.html";
+    const here = pageId(location.pathname);
     document.querySelectorAll(".mainmenu > li").forEach((li) => {
       const a = li.querySelector("a[href]");
-      if (a && a.getAttribute("href") === path) li.classList.add("active");
+      if (a && pageId(a.getAttribute("href")) === here) li.classList.add("active");
     });
   }
 
