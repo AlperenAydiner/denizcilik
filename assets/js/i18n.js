@@ -35,6 +35,7 @@
       "kpi.yuk": "Elleçlenen Yük", "kpi.konteyner": "Konteyner", "kpi.gemi": "Uğrayan Gemi",
       "kpi.bogaz": "Boğaz Gemi Geçişi", "kpi.kruvaziyer": "Kruvaziyer Yolcusu",
       "kpi.roro": "RO-RO ile Araç", "kpi.kabotaj": "Kabotaj Yolcusu", "kpi.filo": "Türk Ticaret Filosu",
+      "kpi.vsYear": "{y}'e göre",
 
       "unit.ton": "ton", "unit.teu": "TEU", "unit.gemi": "gemi", "unit.gecis": "geçiş",
       "unit.yolcu": "yolcu", "unit.arac": "araç", "unit.grosston": "gros ton",
@@ -159,6 +160,7 @@
       "kpi.yuk": "Cargo Handled", "kpi.konteyner": "Containers", "kpi.gemi": "Calling Vessels",
       "kpi.bogaz": "Strait Transits", "kpi.kruvaziyer": "Cruise Passengers",
       "kpi.roro": "RO-RO Vehicles", "kpi.kabotaj": "Cabotage Passengers", "kpi.filo": "Turkish Merchant Fleet",
+      "kpi.vsYear": "vs {y}",
 
       "unit.ton": "tonnes", "unit.teu": "TEU", "unit.gemi": "vessels", "unit.gecis": "transits",
       "unit.yolcu": "passengers", "unit.arac": "vehicles", "unit.grosston": "gross tonnage",

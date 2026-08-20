@@ -290,6 +290,7 @@ body::after {
   display: flex; align-items: baseline; gap: 0.32em; flex-wrap: wrap;
 }
 .kpi-unit { font-size: 0.9rem; font-weight: 600; color: var(--text-soft); letter-spacing: 0; }
+.kpi-compare { margin-top: 5px; font-size: 0.76rem; color: var(--text-dim); }
 .kpi-spark { margin: 14px 0 4px; min-height: 20px; }
 .kpi-sub { font-size: 0.86rem; color: var(--text-dim); line-height: 1.45; flex: 1; }
 .kpi-go {

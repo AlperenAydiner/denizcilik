@@ -212,3 +212,8 @@ on conflict (key) do nothing;
 -- olarak REST üzerinden (service_role, yerel) eklendi — bu SQL dosyası sadece kayıt amaçlı,
 -- yeniden eklemek gerekirse ilgili .xls dosyaları kabotaj-istatistikleri sayfasından
 -- indirilip 4. sütun (index 2) okunmalı.
+
+-- Anasayfa KPI kartları: artış/azalış karşılaştırma periyodu açıkça yazılsın
+insert into content (key, tr, en) values
+('kpi.vsYear', '{y}''e göre', 'vs {y}')
+on conflict (key) do nothing;

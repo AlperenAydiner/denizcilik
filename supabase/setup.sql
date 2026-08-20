@@ -24,7 +24,7 @@ insert into metrics (key,label,value,unit,year,prev,yoy,note,ord) values
 ('kruvaziyer_yolcu','Kruvaziyer Yolcusu',1889426,'yolcu',2024,1542522,22.5,null,4),
 ('roro_arac','RO-RO Araç',2722081,'araç',2024,2761362,-1.4,null,5),
 ('kabotaj_yolcu','Kabotaj Yolcusu',117832340,'yolcu',2024,119512485,-1.4,null,6),
-('filo_gemi','Türk Ticaret Filosu',414,'gemi',2023,null,null,'1.000 GT ve üzeri Türk deniz ticaret filosu',7);
+('filo_gemi','Türk Ticaret Filosu',398,'gemi',2025,405,-1.7,'1.000 GT ve üzeri Türk deniz ticaret filosu',7);
 
 insert into ports (name,sea,lat,lon,mx,my,yuk_ton,konteyner_teu) values
 ('İstanbul','Marmara',41.01,28.97,172.6,97.9,4361495,6991),
