@@ -610,9 +610,9 @@ body::after {
   padding: 22px; border-radius: var(--radius-lg);
   background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-soft);
 }
-/* Yalnız gemi sayfası — istek üzerine sabit değil, sayfayla birlikte kayar.
-   Diğer kategori sayfaları etkilenmez. */
-body[data-cat="gemi"] .cat-filters { position: static; top: auto; }
+/* Çoklu-yıl açılır listeli (quad) sayfalar — istek üzerine sabit değil,
+   sayfayla birlikte kayar. Tekli-yıl seçmeli diğer kategori sayfaları etkilenmez. */
+body.cat-quad .cat-filters { position: static; top: auto; }
 .filter-head { display: flex; align-items: center; gap: 9px; font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--border); color: var(--white); }
 .filter-head svg { width: 20px; height: 20px; color: var(--accent); }
 .filter-group { margin-bottom: 20px; }
@@ -1019,7 +1019,7 @@ body[data-cat="gemi"] .cat-filters { position: static; top: auto; }
    çerçeve, hücreler ince dikey çizgiyle ayrılır (bigstats ile aynı dil, yan
    yana; alt alta değil). */
 .dash-quad {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+  display: grid; grid-template-columns: repeat(var(--card-count, 4), 1fr); gap: 0;
   border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;
   background: var(--surface); box-shadow: var(--shadow-soft);
 }

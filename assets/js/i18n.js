@@ -46,6 +46,10 @@
       "cat.roro": "RO-RO Araç İstatistikleri", "cat.kabotaj": "Kabotaj İstatistikleri",
       "cat.bogazlar": "Türk Boğazları Gemi Geçiş İstatistikleri", "cat.filo": "Filo İstatistikleri",
 
+      "yuk.kpiTotal": "Toplam Taşınan Yük",
+      "yuk.kpiTopCountry": "En Çok Yük Elleçlenen Ülke",
+      "yuk.kpiTopPort": "En Çok Yük Elleçlenen Liman",
+
       "cat.prevYear": "Önceki yıl", "cat.topPort": "En büyük liman",
       "cat.monthTitle": "Aylara göre dağılım",
       "cat.trendTitle": "Yıllara göre gelişim", "cat.portsTitle": "Limanlara göre dağılım",
@@ -170,6 +174,10 @@
       "cat.gemi": "Vessel Statistics", "cat.kruvaziyer": "Cruise Statistics",
       "cat.roro": "RO-RO Vehicle Statistics", "cat.kabotaj": "Cabotage Statistics",
       "cat.bogazlar": "Turkish Straits Vessel Transit Statistics", "cat.filo": "Fleet Statistics",
+
+      "yuk.kpiTotal": "Total Cargo Handled",
+      "yuk.kpiTopCountry": "Top Cargo Handling Country",
+      "yuk.kpiTopPort": "Top Cargo Handling Port",
 
       "cat.prevYear": "Previous year", "cat.topPort": "Largest port",
       "cat.monthTitle": "Monthly breakdown",

@@ -217,3 +217,10 @@ on conflict (key) do nothing;
 insert into content (key, tr, en) values
 ('kpi.vsYear', '{y}''e göre', 'vs {y}')
 on conflict (key) do nothing;
+
+-- Yük sayfası 3'lü KPI panosu (sonradan eklendi)
+insert into content (key, tr, en) values
+('yuk.kpiTotal', 'Toplam Taşınan Yük', 'Total Cargo Handled'),
+('yuk.kpiTopCountry', 'En Çok Yük Elleçlenen Ülke', 'Top Cargo Handling Country'),
+('yuk.kpiTopPort', 'En Çok Yük Elleçlenen Liman', 'Top Cargo Handling Port')
+on conflict (key) do nothing;

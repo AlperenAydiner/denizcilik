@@ -37,8 +37,17 @@
       ic: "yuk", accent: "--c-yuk", unit: "unit.ton", headKey: "yuk_ton", arch: "yuk",
       trendKey: "yuk_ton",
       series: [{ k: "yukleme", key: "series.yukleme" }, { k: "bosaltma", key: "series.bosaltma" }],
-      donut: { dim: "kargo_tipi", key: "dim.yuk.donut" },
-      barsDim: { dim: "ulke", key: "dim.yuk.bars", top: 10 },
+      quad: true, defaultYearSpan: 1,
+      cards: [
+        { type: "sum", seri: "toplam", labelKey: "yuk.kpiTotal", unitKey: "unit.ton" },
+        { type: "topCountry", seri: "toplam", labelKey: "yuk.kpiTopCountry", unitKey: "unit.ton" },
+        { type: "topPort", seri: "toplam", labelKey: "yuk.kpiTopPort", unitKey: "unit.ton" },
+      ],
+      charts: [
+        { id: "dMonth", type: "monthly", titleKey: "cat.monthTitle" },
+        { id: "dCountries", type: "countries", seri: "toplam", titleKey: "dim.yuk.bars" },
+        { id: "dPorts", type: "ports", seri: "toplam", titleKey: "cat.portsTitle" },
+      ],
     },
     konteyner: {
       ic: "konteyner", accent: "--c-konteyner", unit: "unit.teu", headKey: "konteyner_teu", arch: "konteyner",
@@ -50,10 +59,20 @@
     gemi: {
       ic: "gemi", accent: "--c-gemi", unit: "unit.gemi", headKey: "gemi_sayisi", arch: "gemi",
       trendKey: "gemi_gros_ton",
-      series: [{ k: "turk", key: "series.turk" }, { k: "yabanci", key: "series.yabanci" }],
-      split: true, splitKey: "dim.gemi.split",
-      quad: true, // seri/bölge filtresi yok; 2×2 KPI panosu (Türk/yabancı gemi + en çok gemi/GT gelen liman)
+      quad: true, // seri/bölge filtresi yok; 4'lü KPI panosu
       defaultYearSpan: 2, // trend grafikleri en az 2 yıl ister — ilk açılışta hepsi dolu görünsün
+      cards: [
+        { type: "sum", seri: "turk", labelKey: "gemi.kpiTurk", unitKey: "unit.gemi" },
+        { type: "sum", seri: "yabanci", labelKey: "gemi.kpiYabanci", unitKey: "unit.gemi" },
+        { type: "topPort", seri: "toplam", labelKey: "gemi.kpiTopPort", unitKey: "unit.gemi" },
+        { type: "topPort", seri: "toplam_gt", labelKey: "gemi.kpiTopPortGt", unitKey: "unit.grosston" },
+      ],
+      charts: [
+        { id: "dTurkTrend", type: "singleSeries", seri: "turk", seriKey: "series.turk", titleKey: "gemi.chartTurk" },
+        { id: "dYabanciTrend", type: "singleSeries", seri: "yabanci", seriKey: "series.yabanci", titleKey: "gemi.chartYabanci", alt: true },
+        { id: "dPorts", type: "ports", seri: "toplam", unitKey: "unit.gemi", titleKey: "cat.portsTitle" },
+        { id: "dPortsGt", type: "ports", seri: "toplam_gt", unitKey: "unit.grosston", titleKey: "gemi.chartPortsGt" },
+      ],
     },
     kruvaziyer: {
       ic: "kruvaziyer", accent: "--c-kruvaziyer", unit: "unit.yolcu", headKey: "kruvaziyer_yolcu", arch: "kruvaziyer",
@@ -135,6 +154,14 @@
     const agg = {};
     rows.forEach((r) => { agg[r.liman] = (agg[r.liman] || 0) + r.deger; });
     return Object.keys(agg).map((liman) => ({ liman, deger: agg[liman] })).sort((a, b) => b.deger - a.deger);
+  }
+  // Ülke bazlı toplam (fact_country → bRows()'ta boyut="ulke" olarak birleştirilmişti — aynı
+  // aggPorts mantığı, seçili yılların toplamı).
+  function aggCountries(seri) {
+    const rows = bRows().filter((r) => r.boyut === "ulke" && r.seri === seri && state.years.includes(r.yil) && r.deger > 0);
+    const agg = {};
+    rows.forEach((r) => { agg[r.etiket] = (agg[r.etiket] || 0) + r.deger; });
+    return Object.keys(agg).map((etiket) => ({ etiket, deger: agg[etiket] })).sort((a, b) => b.deger - a.deger);
   }
   // Ardışık ayları "Oca-Tem" gibi aralığa sıkıştırır; ardışık olmayanları virgülle ayırır
   // (örn. [1,2,3,6,7] → "Oca-Mar, Haz-Tem"). Genel amaçlı — başka sayfalarda da kullanılabilir.
@@ -400,60 +427,37 @@
     setTimeout(draw, 40);
   }
 
-  /* ---------- Dashboard: 2×2 KPI panosu (gemi) ---------- */
+  /* ---------- Dashboard: bildirimli KPI panosu (cfg.cards/cfg.charts — gemi, yük, …) ---------- */
   function renderDashQuad(box) {
     const avail = curAvail(), unit = t(cfg.unit);
     const partial = avail.length && state.months.length < avail.length;
-
-    const turk = sumSel("turk"), yabanci = sumSel("yabanci");
-    const topCount = aggPorts("toplam")[0];
-    const topGt = aggPorts("toplam_gt")[0];
-
     const ysum = yearsSummary();
     const monthsTxt = compressMonths(state.months);
     const subCounts = `${ysum}${monthsTxt ? " · " + monthsTxt : ""}${partial ? " · " + t("ui.partial") : ""}`;
     const subYearly = `${ysum} · <span data-i18n="ui.yearlyTotal">${t("ui.yearlyTotal")}</span>`;
 
-    const NOTE_COUNT = "Bu toplam, seçili yıl(lar) ve ayların veritabanındaki değerlerinden hesaplanıyor. Değiştirmek için aşağıdaki “aylara göre dağılım” grafiğinde ilgili sütuna tıkla.";
-    const NOTE_PORT = "Bu değer, seçili yıllardaki liman toplamlarından hesaplanıyor. Değiştirmek için aşağıdaki “limanlara göre dağılım” grafiğinde ilgili sütuna tıkla.";
-
-    const dq = (labelKey, valueHtml, sub, note) =>
-      `<div class="dq-card" style="--kc:${accent}">
+    const cardsHtml = cfg.cards.map((cd) => {
+      const r = computeCard(cd);
+      return `<div class="dq-card" style="--kc:${accent}">
         <div class="dq-ic">${icon(cfg.ic)}</div>
-        <div class="dq-label" data-i18n="${labelKey}">${t(labelKey)}</div>
-        <div class="dq-num"${note ? ` data-derived="${note}"` : ""}>${valueHtml}</div>
-        <div class="dq-sub">${sub}</div>
+        <div class="dq-label" data-i18n="${cd.labelKey}">${t(cd.labelKey)}</div>
+        <div class="dq-num"${r.note ? ` data-derived="${r.note}"` : ""}>${r.valueHtml}</div>
+        <div class="dq-sub">${r.yearly ? subYearly : subCounts}</div>
       </div>`;
+    }).join("");
 
-    const hvT = U.human(turk), hvY = U.human(yabanci);
-    const magT = hvT.uKey ? `<span data-i18n="${hvT.uKey}">${hvT.u}</span> ` : "";
-    const magY = hvY.uKey ? `<span data-i18n="${hvY.uKey}">${hvY.u}</span> ` : "";
+    const capped = state.years.length > 10;
+    const capNote = capped ? (lang() === "en" ? " · showing most recent 10 years" : " · en güncel 10 yıl gösteriliyor") : "";
 
-    const cardTurk = dq("gemi.kpiTurk",
-      `${hvT.v} <span class="dq-unit">${magT}<span data-i18n="${cfg.unit}">${unit}</span></span>`, subCounts, NOTE_COUNT);
-    const cardYab = dq("gemi.kpiYabanci",
-      `${hvY.v} <span class="dq-unit">${magY}<span data-i18n="${cfg.unit}">${unit}</span></span>`, subCounts, NOTE_COUNT);
-    const hvP = topCount ? U.human(topCount.deger) : null;
-    const magP = hvP && hvP.uKey ? `<span data-i18n="${hvP.uKey}">${hvP.u}</span> ` : "";
-    const cardTopPort = topCount
-      ? dq("gemi.kpiTopPort", `<span class="dq-port">${topCount.liman}</span>${hvP.v} <span class="dq-unit">${magP}<span data-i18n="${cfg.unit}">${unit}</span></span>`, subYearly, NOTE_PORT)
-      : dq("gemi.kpiTopPort", "—", subYearly, "");
-    const hvG = topGt ? U.human(topGt.deger) : null;
-    const magG = hvG && hvG.uKey ? `<span data-i18n="${hvG.uKey}">${hvG.u}</span> ` : "";
-    const cardTopGt = topGt
-      ? dq("gemi.kpiTopPortGt", `<span class="dq-port">${topGt.liman}</span>${hvG.v} <span class="dq-unit">${magG}<span data-i18n="unit.grosston">${t("unit.grosston")}</span></span>`, subYearly, NOTE_PORT)
-      : dq("gemi.kpiTopPortGt", "—", subYearly, "");
+    const chartsHtml = cfg.charts.map((ch) => {
+      let s2;
+      if (ch.type === "monthly") s2 = `${ysum} · ${unit}${capNote}`;
+      else if (ch.type === "singleSeries") s2 = `${subCounts}${capNote}`;
+      else s2 = `${ysum} · ${t(ch.unitKey || cfg.unit)}`;
+      return dashCard(ch.id, t(ch.titleKey), s2, ch.titleKey);
+    }).join("");
 
-    const head = `<div class="dash-quad">${cardTurk}${cardYab}${cardTopPort}${cardTopGt}</div>`;
-
-    // 4 kart → 4 grafik, birebir eşleşir (kartın altındaki detayı gösterir)
-    let cards = "";
-    cards += dashCard("dTurkTrend", t("gemi.chartTurk"), subCounts, "gemi.chartTurk");
-    cards += dashCard("dYabanciTrend", t("gemi.chartYabanci"), subCounts, "gemi.chartYabanci");
-    if (pRows().length) cards += dashCard("dPorts", t("cat.portsTitle"), `${ysum} · ${unit}`, "cat.portsTitle");
-    if (pRows().length) cards += dashCard("dPortsGt", t("gemi.chartPortsGt"), `${ysum} · ${t("unit.grosston")}`, "gemi.chartPortsGt");
-
-    box.innerHTML = head + `<div class="dash-cards">${cards}</div>`;
+    box.innerHTML = `<div class="dash-quad" style="--card-count:${cfg.cards.length}">${cardsHtml}</div><div class="dash-cards">${chartsHtml}</div>`;
     setTimeout(draw, 40);
   }
 
@@ -528,32 +532,107 @@
       };
     }) });
   }
+  // Ülke çubuk grafiği — drawPortsBars ile aynı desen, fact_country'ye yazar.
+  function drawCountriesBars(host, top, seri, singleYear, unitLabel) {
+    if (!top.length) { host.innerHTML = `<p class="csub" data-i18n="cat.noPortData">${t("cat.noPortData")}</p>`; return; }
+    C.bars(host, { unit: unitLabel, items: top.map((r) => {
+      const label = short(r.etiket);
+      if (singleYear == null) return { label, value: r.deger, color: accent };
+      const m = { kategori: cat, yil: singleYear, ulke: r.etiket, seri };
+      return {
+        label, value: r.deger, color: accent,
+        edit: { t: "fact_country", m, f: "deger", l: `${r.etiket} · ${singleYear}`, k: "num" },
+        editLabel: { t: "fact_country", m, f: "ulke", l: `${r.etiket} — ad`, k: "text", w: RENAME_WARN },
+      };
+    }) });
+  }
 
-  // Gemi sayfası: 4 kart → 4 grafik, birebir eşleşir.
-  function drawGemiQuad() {
+  // Ay filtresine duyarlı "toplam" kartı ile yıllık toplam kartları için ayrı açıklama
+  // metinleri — hem KPI panosunda hem düzenleme modunda tutarlı kalsın diye tek yerde.
+  const NOTE_SUM = "Bu toplam, seçili yıl(lar) ve ayların veritabanındaki değerlerinden hesaplanıyor. Değiştirmek için aşağıdaki ilgili grafikte ilgili sütuna tıkla.";
+  const NOTE_TOP = "Bu değer, seçili yıllardaki toplamlardan hesaplanıyor. Değiştirmek için aşağıdaki ilgili grafikte ilgili sütuna tıkla.";
+
+  // Bildirimli kart hesaplama — cfg.cards'taki her girdi için değer/açıklama/not üretir.
+  function computeCard(cd) {
+    if (cd.type === "sum") {
+      const hv = U.human(sumSel(cd.seri));
+      const mag = hv.uKey ? `<span data-i18n="${hv.uKey}">${hv.u}</span> ` : "";
+      return {
+        valueHtml: `${hv.v} <span class="dq-unit">${mag}<span data-i18n="${cd.unitKey}">${t(cd.unitKey)}</span></span>`,
+        note: NOTE_SUM, yearly: false,
+      };
+    }
+    const agg = cd.type === "topPort" ? aggPorts(cd.seri) : aggCountries(cd.seri);
+    const top = agg[0];
+    if (!top) return { valueHtml: "—", note: "", yearly: true };
+    const name = cd.type === "topPort" ? top.liman : short(top.etiket);
+    const hv = U.human(top.deger);
+    const mag = hv.uKey ? `<span data-i18n="${hv.uKey}">${hv.u}</span> ` : "";
+    return {
+      valueHtml: `<span class="dq-port">${name}</span>${hv.v} <span class="dq-unit">${mag}<span data-i18n="${cd.unitKey}">${t(cd.unitKey)}</span></span>`,
+      note: NOTE_TOP, yearly: true,
+    };
+  }
+
+  // Aylara göre dağılım — tek yıl: cfg.series'e göre yığılmış/gruplu sütun (kategorinin
+  // klasik görünümü). Çoklu yıl: her yıl ayrı çizgi, toplam seri (seri ayrımı kaybolur —
+  // okunabilirlik için en yeni 10 yılla sınırlı). cfg.quad olmayan sayfalarda state.years
+  // hep 1 elemanlı olduğu için ikinci dal hiç çalışmaz, davranış değişmez.
+  function drawMonthlyChart(host) {
+    const avail = curAvail(), unit = t(cfg.unit);
+    if (!avail.length) return;
+    const cs = getComputedStyle(document.documentElement);
+    if (state.years.length > 1) {
+      const palette = ["--c-yuk", "--c-konteyner", "--c-gemi", "--c-kruvaziyer", "--c-roro", "--c-bogaz"]
+        .map((v) => cs.getPropertyValue(v).trim());
+      const yrsSorted = [...state.years].sort((a, b) => b - a).slice(0, 10);
+      const labels = avail.map((x) => MON()[x - 1]);
+      const series = yrsSorted.map((y, i) => ({
+        name: String(y), color: palette[i % palette.length],
+        values: avail.map((mo) => mVal(y, mo, "toplam")),
+        edit: (idx) => { const mo = avail[idx]; return mo == null ? null : { t: "fact_monthly",
+          m: { kategori: cat, yil: y, ay: mo, seri: "toplam" }, f: "deger",
+          l: `${MON()[mo - 1]} ${y} · ${t("ui.total")}`, k: "num" }; },
+      }));
+      C.lineArea(host, { labels, unit, series });
+    } else {
+      const y = state.years[0];
+      const ramp = [accent, cs.getPropertyValue("--sea-600").trim(), cs.getPropertyValue("--sky-300").trim()];
+      const labels = avail.map((x) => MON()[x - 1]);
+      const series = cfg.series.length
+        ? cfg.series.map((s, i) => ({ name: nm(s), color: ramp[i % ramp.length],
+            values: avail.map((mo) => mVal(y, mo, s.k)),
+            edit: monthEdit(avail, s.k, nm(s)) }))
+        : [{ name: t("ui.total"), color: accent, values: avail.map((mo) => mVal(y, mo, "toplam")),
+            edit: monthEdit(avail, "toplam", t("ui.total")) }];
+      C.columns(host, { labels, series, unit, stacked: cfg.series.length > 1 });
+    }
+  }
+
+  // cfg.quad sayfaları için bildirimli grafik çizimi — cfg.charts'taki her girdiyi kendi
+  // tipine göre çizer. Gemi/yük şu an bunu kullanıyor, sıradaki sayfalar cfg.charts'a
+  // girdi eklemesi yeterli.
+  function drawQuadCharts() {
     const cs = getComputedStyle(document.documentElement);
     const accent2 = cs.getPropertyValue("--sea-600").trim();
-    const unit = t(cfg.unit), gtUnit = t("unit.grosston");
-
-    // Her nokta seçili ayların toplamı — tek satıra karşılık gelmediği için düzenlenemez
-    // (KPI kartındaki "Bu toplam..." açıklamasıyla aynı mantık). Çizgi grafiği en az 2
-    // nokta ister — tek yıl seçiliyken bunu iste.
-    const th1 = document.getElementById("dTurkTrend");
-    if (th1) {
-      const { labels, values } = yearlySeriesFor("turk");
-      if (labels.length < 2) th1.innerHTML = `<p class="csub" data-i18n="ui.needTwoYears">${t("ui.needTwoYears")}</p>`;
-      else C.lineArea(th1, { labels, unit, series: [{ name: t("series.turk"), color: accent, values }] });
-    }
-    const th2 = document.getElementById("dYabanciTrend");
-    if (th2) {
-      const { labels, values } = yearlySeriesFor("yabanci");
-      if (labels.length < 2) th2.innerHTML = `<p class="csub" data-i18n="ui.needTwoYears">${t("ui.needTwoYears")}</p>`;
-      else C.lineArea(th2, { labels, unit, series: [{ name: t("series.yabanci"), color: accent2, values }] });
-    }
-    const ph = document.getElementById("dPorts");
-    if (ph) drawPortsBars(ph, aggPorts("toplam").slice(0, 10), "toplam", state.years.length === 1 ? state.years[0] : null, unit);
-    const ph2 = document.getElementById("dPortsGt");
-    if (ph2) drawPortsBars(ph2, aggPorts("toplam_gt").slice(0, 10), "toplam_gt", state.years.length === 1 ? state.years[0] : null, gtUnit);
+    cfg.charts.forEach((ch) => {
+      const host = document.getElementById(ch.id);
+      if (!host) return;
+      if (ch.type === "monthly") {
+        drawMonthlyChart(host);
+      } else if (ch.type === "singleSeries") {
+        const { labels, values } = yearlySeriesFor(ch.seri);
+        if (labels.length < 2) { host.innerHTML = `<p class="csub" data-i18n="ui.needTwoYears">${t("ui.needTwoYears")}</p>`; return; }
+        C.lineArea(host, { labels, unit: t(ch.unitKey || cfg.unit),
+          series: [{ name: t(ch.seriKey || ("series." + ch.seri)), color: ch.alt ? accent2 : accent, values }] });
+      } else if (ch.type === "ports") {
+        const singleYear = state.years.length === 1 ? state.years[0] : null;
+        drawPortsBars(host, aggPorts(ch.seri).slice(0, 10), ch.seri, singleYear, t(ch.unitKey || cfg.unit));
+      } else if (ch.type === "countries") {
+        const singleYear = state.years.length === 1 ? state.years[0] : null;
+        drawCountriesBars(host, aggCountries(ch.seri).slice(0, 10), ch.seri, singleYear, t(ch.unitKey || cfg.unit));
+      }
+    });
   }
 
   // Her metrik → tek çizgi grafik, seçili yıllar küçükten büyüğe. Tek satıra karşılık
@@ -576,10 +655,10 @@
   }
 
   function draw() {
-    if (cfg.quad) { drawGemiQuad(); return; }
+    if (cfg.quad) { drawQuadCharts(); return; }
     if (cfg.yearsOnly) { drawYearsOnly(); return; }
 
-    const unit = t(cfg.unit), avail = curAvail();
+    const unit = t(cfg.unit);
     const cs = getComputedStyle(document.documentElement);
     const palette = ["--c-yuk", "--c-konteyner", "--c-gemi", "--c-kruvaziyer", "--c-roro", "--c-bogaz"]
       .map((v) => cs.getPropertyValue(v).trim());
@@ -587,17 +666,7 @@
     const ramp = [accent, cs.getPropertyValue("--sea-600").trim(), cs.getPropertyValue("--sky-300").trim()];
 
     const mh = document.getElementById("dMonth");
-    if (mh && avail.length) {
-      const y = state.years[0];
-      const labels = avail.map((x) => MON()[x - 1]);
-      const series = cfg.series.length
-        ? cfg.series.map((s, i) => ({ name: nm(s), color: ramp[i % ramp.length],
-            values: avail.map((mo) => mVal(y, mo, s.k)),
-            edit: monthEdit(avail, s.k, nm(s)) }))
-        : [{ name: t("ui.total"), color: accent, values: avail.map((mo) => mVal(y, mo, "toplam")),
-            edit: monthEdit(avail, "toplam", t("ui.total")) }];
-      C.columns(mh, { labels, series, unit, stacked: cfg.series.length > 1 });
-    }
+    if (mh) drawMonthlyChart(mh);
 
     const th = document.getElementById("dTrend");
     const tr = catTrend();
@@ -759,6 +828,8 @@
     m = H[cfg.headKey];
     accent = getComputedStyle(document.documentElement).getPropertyValue(cfg.accent).trim();
     document.title = t("cat." + cat) + " — " + t("site.title");
+    // quad sayfalarda (gemi, yük, …) filtre paneli sabit değil — sayfayla kayar
+    if (cfg.quad) document.body.classList.add("cat-quad");
 
     const ys = new Set();
     if (cfg.yearsOnly) {

@@ -26,8 +26,17 @@
     return tip;
   }
   function showTip(html, x, y) {
-    const t = getTip(); t.innerHTML = html; t.style.opacity = "1";
-    t.style.left = x + "px"; t.style.top = y - 12 + "px"; t.style.transform = "translate(-50%,-100%)";
+    const t = getTip(); t.innerHTML = html; t.style.opacity = "1"; t.style.transform = "translate(-50%,-100%)";
+    t.style.left = x + "px"; t.style.top = y - 12 + "px";
+    // Kenar sütunlarda (ilk/son ay gibi) balon ekran dışına taşmasın
+    requestAnimationFrame(() => {
+      if (t.style.opacity !== "1") return; // hover bu arada bitmiş olabilir
+      const r = t.getBoundingClientRect();
+      let dx = 0;
+      if (r.left < 8) dx = 8 - r.left;
+      else if (r.right > window.innerWidth - 8) dx = window.innerWidth - 8 - r.right;
+      t.style.transform = dx ? `translate(calc(-50% + ${dx}px), -100%)` : "translate(-50%,-100%)";
+    });
   }
   function hideTip() { if (tip) tip.style.opacity = "0"; }
 
@@ -240,7 +249,7 @@
           const v = se.values[i] || 0; if (!v) return;
           const y0 = Y(acc + v), h = Y(acc) - Y(acc + v);
           const r = el("rect", { x: cx - inner / 2, y: y0, width: inner, height: Math.max(h, 0), fill: se.color, style: "cursor:pointer" });
-          attach(r, lb, se, v, opts, host, W, i);
+          attach(r, lb, se, v, opts, host, W, i, cx, y0);
           svg.appendChild(r); acc += v;
         });
       } else {
@@ -248,21 +257,24 @@
         series.forEach((se, si) => {
           const v = se.values[i] || 0; if (!v) return;
           const x = cx - inner / 2 + si * sw;
-          const r = el("rect", { x: x, y: Y(v), width: Math.max(sw - 2, 2), height: Math.max(ih - (Y(v) - pad.t), 0), rx: 3, fill: se.color, style: "cursor:pointer" });
-          attach(r, lb, se, v, opts, host, W, i);
+          const bw2 = Math.max(sw - 2, 2);
+          const r = el("rect", { x: x, y: Y(v), width: bw2, height: Math.max(ih - (Y(v) - pad.t), 0), rx: 3, fill: se.color, style: "cursor:pointer" });
+          attach(r, lb, se, v, opts, host, W, i, x + bw2 / 2, Y(v));
           svg.appendChild(r);
         });
       }
     });
     host.appendChild(svg);
 
-    function attach(node, lb, se, v, opts2, hostEl, WW, idx) {
+    // tipX/tipY: sütunun kendi SVG konumu (bars()/lineArea() ile aynı dönüşüm) —
+    // eskiden fare imlecinin ekran konumu kullanılıyordu, balon sağa/aşağı kayıyordu.
+    function attach(node, lb, se, v, opts2, hostEl, WW, idx, tipX, tipY) {
       if (se.edit) markEdit(node, se.edit(idx));
-      node.addEventListener("mouseenter", (ev) => {
+      node.addEventListener("mouseenter", () => {
         node.style.opacity = "0.82";
         const rect = hostEl.getBoundingClientRect(), sc = rect.width / WW;
         showTip(`<b>${lb}</b> — ${se.name}<br><b>${nf.format(v)}</b> ${opts2.unit || ""}`,
-          rect.left + (ev.offsetX || 0) * 0 + ev.clientX - rect.left + rect.left, ev.clientY + window.scrollY);
+          rect.left + tipX * sc, rect.top + tipY * sc + window.scrollY);
       });
       node.addEventListener("mouseleave", () => { node.style.opacity = "1"; hideTip(); });
     }
