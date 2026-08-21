@@ -145,10 +145,19 @@
         { key: "kabotaj_yolcu_mil", labelKey: "kabotaj.kpiYolcuMil", unitKey: "unit.yolcumil" },
       ],
     },
-    filo: { ic: "filo", accent: "--c-filo", unit: "unit.gemi", headKey: "filo_gemi", arch: "filo",
-      trendKey: null, series: [], useDetailTrend: true,
+    filo: {
+      ic: "filo", accent: "--c-filo", unit: "unit.gemi", headKey: "filo_gemi", arch: "filo",
+      trendKey: null, series: [],
+      // Filo verisi kaynakta yalnız yıllık — ay kırılımı hiç yok (kabotaj ile aynı durum).
+      yearsOnly: true, defaultYearSpan: 5,
+      metrics: [
+        // Yaş bir ortalama: çoklu yıl seçilince toplanamaz, yılların ortalaması alınır.
+        { key: "filo_yas_ort", labelKey: "filo.kpiYas", unitKey: "unit.yas", agg: "avg" },
+        { key: "filo_adet", labelKey: "filo.kpiAdet", unitKey: "unit.gemi", agg: "last" },
+        { key: "filo_dwt", labelKey: "filo.kpiDwt", unitKey: "unit.dwt", agg: "last" },
+      ],
       barsDim: { dim: "gemi_cinsi", key: "dim.filo.bars", top: 12 },
-      donut: { dim: "gemi_cinsi", key: "dim.filo.donut" } },
+    },
   };
 
   const cat = document.body.dataset.cat;
@@ -575,27 +584,51 @@
     setTimeout(draw, 40);
   }
 
-  /* ---------- Dashboard: yalnız yıl, 4 metrik (kabotaj) ---------- */
+  /* ---------- Dashboard: yalnız yıl (kabotaj, filo) ---------- */
+  // Yıllık metrik toplama biçimi: akış değişkenleri (kabotaj: taşınan yolcu/araç) yıllar
+  // boyunca toplanır; stok değişkenleri (filo: gemi adedi/DWT — o yılın sonundaki filo)
+  // toplanamaz, en güncel seçili yıl gösterilir; ortalama yaş ise yılların ortalaması.
+  const YO_AGG = {
+    sum: { calc: (vals) => vals.reduce((s, v) => s + v, 0), subKey: "ui.yearlyTotal",
+           note: "Bu toplam, seçili yıl(lar)ın veritabanındaki değerlerinden hesaplanıyor. Değiştirmek için aşağıdaki ilgili grafikte o yıla tıkla." },
+    avg: { calc: (vals) => vals.reduce((s, v) => s + v, 0) / vals.length, subKey: "ui.yearlyAvg",
+           note: "Bu değer, seçili yılların veritabanındaki değerlerinin ortalamasıdır. Değiştirmek için aşağıdaki ilgili grafikte o yıla tıkla." },
+    last: { calc: (vals, yrs) => vals[yrs.indexOf(Math.max(...yrs))], subKey: "ui.latestYear",
+            note: "Bu bir stok değeridir (yılsonu filosu), yıllar toplanamaz — seçili en güncel yılın veritabanındaki değeri gösteriliyor. Değiştirmek için aşağıdaki ilgili grafikte o yıla tıkla." },
+  };
+
   function renderDashYearsOnly(box) {
     const ysum = yearsSummary();
-    const sub = `${ysum} · <span data-i18n="ui.yearlyTotal">${t("ui.yearlyTotal")}</span>`;
-    const NOTE = "Bu toplam, seçili yıl(lar)ın veritabanındaki değerlerinden hesaplanıyor. Değiştirmek için aşağıdaki ilgili grafikte o yıla tıkla.";
 
     const cardsHtml = cfg.metrics.map((mt) => {
       const tr = T[mt.key] || {};
-      const sum = state.years.reduce((s, y) => s + (tr[y] || 0), 0);
-      const hv = U.human(sum);
+      const yrs = state.years.filter((y) => tr[y] != null);
+      const agg = YO_AGG[mt.agg || "sum"];
+      if (!yrs.length) {
+        return `<div class="dq-card" style="--kc:${accent}">
+          <div class="dq-ic">${icon(cfg.ic)}</div>
+          <div class="dq-label" data-i18n="${mt.labelKey}">${t(mt.labelKey)}</div>
+          <div class="dq-num">—</div><div class="dq-sub">${ysum}</div></div>`;
+      }
+      const val = agg.calc(yrs.map((y) => tr[y]), yrs);
+      const hv = U.human(val);
       const mag = hv.uKey ? `<span data-i18n="${hv.uKey}">${hv.u}</span> ` : "";
+      const sub = `${ysum} · <span data-i18n="${agg.subKey}">${t(agg.subKey)}</span>`;
       return `<div class="dq-card" style="--kc:${accent}">
         <div class="dq-ic">${icon(cfg.ic)}</div>
         <div class="dq-label" data-i18n="${mt.labelKey}">${t(mt.labelKey)}</div>
-        <div class="dq-num" data-derived="${NOTE}">${hv.v} <span class="dq-unit">${mag}<span data-i18n="${mt.unitKey}">${t(mt.unitKey)}</span></span></div>
+        <div class="dq-num" data-derived="${agg.note}">${hv.v} <span class="dq-unit">${mag}<span data-i18n="${mt.unitKey}">${t(mt.unitKey)}</span></span></div>
         <div class="dq-sub">${sub}</div>
       </div>`;
     }).join("");
 
-    const cards = cfg.metrics.map((mt) => dashCard(mt.key, t(mt.labelKey), ysum, mt.labelKey)).join("");
-    box.innerHTML = `<div class="dash-quad">${cardsHtml}</div><div class="dash-cards">${cards}</div>`;
+    let cards = cfg.metrics.map((mt) => dashCard(mt.key, t(mt.labelKey), ysum, mt.labelKey)).join("");
+    if (cfg.barsDim && bRows().some((r) => r.boyut === cfg.barsDim.dim)) {
+      // Stok veri (yılsonu envanteri) — yalnız en güncel seçili yılı gösterir, altyazı bunu netleştirir.
+      const latestY = Math.max(...state.years);
+      cards += dashCard("dBars", t(cfg.barsDim.key), `${latestY} · ${t(cfg.unit)}`, cfg.barsDim.key);
+    }
+    box.innerHTML = `<div class="dash-quad" style="--card-count:${cfg.metrics.length}">${cardsHtml}</div><div class="dash-cards">${cards}</div>`;
     setTimeout(draw, 40);
   }
 
@@ -923,6 +956,24 @@
                         l: `${ys[i]} · ${t(mt.labelKey)}`, k: "num" }),
       }] });
     });
+
+    // Gemi cinsi kırılımı (filo) — bu bir STOK (yılsonu envanteri): yıllar toplanamaz
+    // (topPort/topHat gibi akış boyutlarından farklı), bu yüzden aggBreakdown() kullanılmıyor —
+    // seçili yılların en güncel olanının tek satırlık dağılımı gösterilir, her zaman düzenlenebilir.
+    const bh = document.getElementById("dBars");
+    if (bh && cfg.barsDim) {
+      const y = Math.max(...state.years);
+      const items = bRows().filter((r) => r.boyut === cfg.barsDim.dim && r.seri === "adet" && r.yil === y)
+        .sort((a, b) => b.deger - a.deger).slice(0, cfg.barsDim.top).map((r) => {
+        const label = short(r.etiket);
+        const m = { kategori: cat, yil: y, boyut: cfg.barsDim.dim, etiket: r.etiket, seri: "adet" };
+        return { label, value: r.deger, color: accent,
+          edit: { t: "fact_breakdown", m, f: "deger", l: `${label} · ${y}`, k: "num" },
+          editLabel: { t: "fact_breakdown", m, f: "etiket", l: `${label} — ad`, k: "text", w: RENAME_WARN } };
+      });
+      if (items.length) C.bars(bh, { unit: t(cfg.unit), items });
+      else bh.innerHTML = `<p class="csub">—</p>`;
+    }
   }
 
   function draw() {

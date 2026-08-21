@@ -269,3 +269,14 @@ insert into content (key, tr, en) values
 ('kruvaziyer.kpiTopMonth', 'En yoğun ay', 'Busiest month'),
 ('ui.marketShare', 'pazar payı', 'market share')
 on conflict (key) do nothing;
+
+-- Filo dashboard yeniden tasarımı: ortalama yaş / gemi sayısı / DWT KPI kartları
+insert into content (key, tr, en) values
+('unit.yas', 'yaş', 'years'),
+('unit.dwt', 'DWT', 'DWT'),
+('filo.kpiYas', 'Ortalama gemi yaşı', 'Average fleet age'),
+('filo.kpiAdet', 'Gemi sayısı', 'Number of vessels'),
+('filo.kpiDwt', 'Toplam deadweight (DWT)', 'Total deadweight (DWT)'),
+('ui.yearlyAvg', 'yılların ortalaması', 'average across years'),
+('ui.latestYear', 'en güncel yıl', 'latest year')
+on conflict (key) do nothing;
