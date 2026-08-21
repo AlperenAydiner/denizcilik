@@ -63,10 +63,13 @@
         { type: "topPort", labelKey: "konteyner.kpiTopPort", unitKey: "unit.teu" },
         { type: "topCountry", labelKey: "konteyner.kpiTopCountry", unitKey: "unit.teu" },
       ],
+      // dTrend ilk sırada: CSS'te ilk .dash-card tam genişlik açılıyor (bkz. .dash-card:first-child),
+      // bu geniş çizgi grafiği için uygun. dRegime (donut) o kurala takılırsa kare SVG'si absürt
+      // büyüyor — bu yüzden ilk sırada DEĞİL; "Konteyner cinsi" grafiği (dCins) kaldırıldı, dRegime
+      // onun yerine normal (yarım genişlik) bir kart olarak geçti.
       charts: [
-        { id: "dRegime", type: "regime", titleKey: "konteyner.chartRegime" },
-        { id: "dCins", type: "cins", titleKey: "konteyner.chartCins" },
         { id: "dTrend", type: "singleSeries", titleKey: "cat.trendTitle" },
+        { id: "dRegime", type: "regime", titleKey: "konteyner.chartRegime" },
         { id: "dPorts", type: "ports", titleKey: "cat.portsTitle" },
         { id: "dCountries", type: "countries", titleKey: "dim.konteyner.bars" },
       ],
