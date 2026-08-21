@@ -280,3 +280,28 @@ insert into content (key, tr, en) values
 ('ui.yearlyAvg', 'yılların ortalaması', 'average across years'),
 ('ui.latestYear', 'en güncel yıl', 'latest year')
 on conflict (key) do nothing;
+
+-- KPI kartları: sayı üstte büyük punto, açıklama altta küçük punto olacak şekilde
+-- yeniden dizildi (dq-card CSS) — bu vesileyle uzun etiketler kısaltıldı (2 satıra
+-- taşan başlıklar yeni düzende yer kaplıyordu). do update: mevcut satırları üzerine yazar.
+insert into content (key, tr, en) values
+('yuk.kpiTotal', 'Toplam taşınan yük', 'Total cargo handled'),
+('yuk.kpiTopCountry', 'En çok elleçleyen ülke', 'Top handling country'),
+('yuk.kpiTopPort', 'En çok elleçleyen liman', 'Top handling port'),
+('konteyner.kpiTotal', 'Toplam elleçleme', 'Total handling'),
+('konteyner.kpiTopPort', 'En çok elleçleyen liman', 'Top handling port'),
+('konteyner.kpiTopCountry', 'En çok elleçleyen ülke', 'Top handling country'),
+('gemi.kpiTurk', 'Türk bayraklı gemi', 'Turkish-flagged vessels'),
+('gemi.kpiYabanci', 'Yabancı bayraklı gemi', 'Foreign-flagged vessels'),
+('gemi.kpiTopPort', 'En yoğun liman', 'Busiest port'),
+('gemi.kpiTopPortGt', 'Gross tonajda lider liman', 'Top port by gross tonnage'),
+('kruvaziyer.kpiTotal', 'Toplam yolcu', 'Total passengers'),
+('kruvaziyer.kpiTopPort', 'En yoğun liman', 'Busiest port'),
+('roro.kpiTotal', 'Toplam taşınan araç', 'Total vehicles carried'),
+('roro.kpiTopType', 'Lider araç cinsi', 'Leading vehicle type'),
+('bogazlar.kpiGemi', 'Toplam gemi geçişi', 'Total vessel transits'),
+('bogazlar.kpiUgraksiz', 'Uğraksız gemi', 'Non-calling vessels'),
+('filo.kpiDwt', 'Toplam deadweight', 'Total deadweight'),
+('kabotaj.kpiArac', 'Taşınan araç', 'Vehicles carried'),
+('kabotaj.kpiYolcu', 'Taşınan yolcu', 'Passengers carried')
+on conflict (key) do update set tr = excluded.tr, en = excluded.en;
