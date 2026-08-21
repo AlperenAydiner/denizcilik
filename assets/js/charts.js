@@ -148,7 +148,9 @@
       bar.addEventListener("mouseenter", () => {
         bar.style.opacity = "0.85";
         const rect = host.getBoundingClientRect(), sc = rect.width / W;
-        showTip(`<b>${d.label}</b><br><b>${nf.format(d.value)}</b> ${opts.unit || ""}`,
+        // shareTotal verilmişse (kruvaziyer): ham sayının altında pazar payı yüzdesi de gösterilir
+        const shareLine = opts.shareTotal ? `<br><span style="opacity:.75">%${((d.value / opts.shareTotal) * 100).toFixed(1).replace(".", ",")} ${window.t ? window.t("ui.marketShare") : "pazar payı"}</span>` : "";
+        showTip(`<b>${d.label}</b><br><b>${nf.format(d.value)}</b> ${opts.unit || ""}${shareLine}`,
           rect.left + (labelW + w) * sc, rect.top + barY * sc + window.scrollY);
       });
       bar.addEventListener("mouseleave", () => { bar.style.opacity = "1"; hideTip(); });
@@ -245,12 +247,15 @@
       const cx = pad.l + bw * i + bw / 2;
       const tx = el("text", { x: cx, y: H - 14, class: "axis-label", "text-anchor": "middle", "font-size": 11 });
       tx.textContent = lb; svg.appendChild(tx);
+      // MIN_H: az/küçük değerli sütunlar tek piksele düşünce fare ile hedeflenemiyordu —
+      // görünür yüksekliği en az birkaç piksele sabitleyip hover'ı garantiliyoruz.
+      const MIN_H = 3;
       if (stacked) {
         let acc = 0;
         series.forEach((se) => {
           const v = se.values[i] || 0; if (!v) return;
-          const y0 = Y(acc + v), h = Y(acc) - Y(acc + v);
-          const r = el("rect", { x: cx - inner / 2, y: y0, width: inner, height: Math.max(h, 0), fill: se.color, style: "cursor:pointer" });
+          const y0 = Y(acc + v), h = Math.max(Y(acc) - Y(acc + v), MIN_H);
+          const r = el("rect", { x: cx - inner / 2, y: y0, width: inner, height: h, fill: se.color, style: "cursor:pointer" });
           attach(r, lb, se, v, opts, host, W, i, cx, y0);
           svg.appendChild(r); acc += v;
         });
@@ -260,7 +265,8 @@
           const v = se.values[i] || 0; if (!v) return;
           const x = cx - inner / 2 + si * sw;
           const bw2 = Math.max(sw - 2, 2);
-          const r = el("rect", { x: x, y: Y(v), width: bw2, height: Math.max(ih - (Y(v) - pad.t), 0), rx: 3, fill: se.color, style: "cursor:pointer" });
+          const h = Math.max(ih - (Y(v) - pad.t), MIN_H);
+          const r = el("rect", { x: x, y: Y(v), width: bw2, height: h, rx: 3, fill: se.color, style: "cursor:pointer" });
           attach(r, lb, se, v, opts, host, W, i, x + bw2 / 2, Y(v));
           svg.appendChild(r);
         });

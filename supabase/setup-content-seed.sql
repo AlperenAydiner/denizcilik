@@ -261,3 +261,11 @@ insert into content (key, tr, en) values
 ('bogazlar.chartGemi', 'Aylara göre gemi adedi', 'Monthly vessel count'),
 ('bogazlar.chartGrossTon', 'Aylara göre toplam gross ton', 'Monthly total gross tonnage')
 on conflict (key) do nothing;
+
+-- Kruvaziyer dashboard yeniden tasarımı: 3 KPI kartı, donut kaldırıldı, limanlar pazar payı tooltip'i
+insert into content (key, tr, en) values
+('kruvaziyer.kpiTotal', 'Toplam kruvaziyer yolcu sayısı', 'Total cruise passengers'),
+('kruvaziyer.kpiTopPort', 'En yoğun liman (pazar payı)', 'Busiest port (market share)'),
+('kruvaziyer.kpiTopMonth', 'En yoğun ay', 'Busiest month'),
+('ui.marketShare', 'pazar payı', 'market share')
+on conflict (key) do nothing;

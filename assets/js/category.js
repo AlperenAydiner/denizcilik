@@ -94,7 +94,16 @@
       trendKey: "kruvaziyer_yolcu",
       series: [{ k: "gelen", key: "series.gelen" }, { k: "giden", key: "series.giden" },
                { k: "transit", key: "series.transit" }],
-      split: true, splitKey: "dim.kruvaziyer.split",
+      quad: true, defaultYearSpan: 1,
+      cards: [
+        { type: "sum", seri: "toplam", labelKey: "kruvaziyer.kpiTotal", unitKey: "unit.yolcu" },
+        { type: "topPortShare", seri: "toplam", labelKey: "kruvaziyer.kpiTopPort", unitKey: "unit.yolcu" },
+        { type: "topMonth", seri: "toplam", labelKey: "kruvaziyer.kpiTopMonth", unitKey: "unit.yolcu" },
+      ],
+      charts: [
+        { id: "dMonth", type: "monthly", titleKey: "cat.monthTitle" },
+        { id: "dPorts", type: "portsShare", seri: "toplam", titleKey: "cat.portsTitle" },
+      ],
     },
     roro: {
       ic: "roro", accent: "--c-roro", unit: "unit.arac", headKey: "roro_arac", arch: "roro",
@@ -631,9 +640,9 @@
 
   // Liman çubuk grafiği — gemi (dPorts/dPortsGt) için ortak çizim; tek yıl seçiliyse
   // düzenlenebilir (tek satıra karşılık gelir), çoklu yılda salt-okunur (toplam).
-  function drawPortsBars(host, top, seri, singleYear, unitLabel) {
+  function drawPortsBars(host, top, seri, singleYear, unitLabel, shareTotal) {
     if (!top.length) { host.innerHTML = `<p class="csub" data-i18n="cat.noPortData">${t("cat.noPortData")}</p>`; return; }
-    C.bars(host, { unit: unitLabel, items: top.map((r) => {
+    C.bars(host, { unit: unitLabel, shareTotal, items: top.map((r) => {
       if (singleYear == null) return { label: r.liman, value: r.deger, color: accent };
       const m = { kategori: cat, yil: singleYear, liman: r.liman, seri };
       return {
@@ -684,6 +693,33 @@
       return {
         valueHtml: `<span class="dq-port">${short(top.etiket)}</span>%${pct.toFixed(1).replace(".", ",")}`,
         note: NOTE_SHARE, yearly: true,
+      };
+    }
+    if (cd.type === "topPortShare") {
+      // En yoğun liman + pazar payı (%) — o limanın toplamı / tüm limanların toplamı
+      const seri = seriFor(cd.seri);
+      const agg = aggPorts(seri);
+      const total = agg.reduce((s, x) => s + x.deger, 0);
+      const top = agg[0];
+      if (!top || !total) return { valueHtml: "—", note: "", yearly: true };
+      const pct = (top.deger / total) * 100;
+      return {
+        valueHtml: `<span class="dq-port">${top.liman}</span>%${pct.toFixed(1).replace(".", ",")}`,
+        note: NOTE_SHARE, yearly: true,
+      };
+    }
+    if (cd.type === "topMonth") {
+      // En yoğun ay — seçili yılların o ayki toplamları (ay filtresinden bağımsız, topPort/topHat ile tutarlı)
+      const seri = seriFor(cd.seri);
+      const avail = curAvail();
+      const totals = avail.map((mo) => ({ mo, deger: state.years.reduce((s, y) => s + mVal(y, mo, seri), 0) }));
+      const top = totals.sort((a, b) => b.deger - a.deger)[0];
+      if (!top || !top.deger) return { valueHtml: "—", note: "", yearly: true };
+      const hv = U.human(top.deger);
+      const mag = hv.uKey ? `<span data-i18n="${hv.uKey}">${hv.u}</span> ` : "";
+      return {
+        valueHtml: `<span class="dq-port">${MON()[top.mo - 1]}</span>${hv.v} <span class="dq-unit">${mag}<span data-i18n="${cd.unitKey}">${t(cd.unitKey)}</span></span>`,
+        note: NOTE_TOP, yearly: true,
       };
     }
     if (cd.type === "topHat") {
@@ -766,6 +802,14 @@
         const seri = seriFor(ch.seri);
         const singleYear = state.years.length === 1 ? state.years[0] : null;
         drawPortsBars(host, aggPorts(seri).slice(0, 10), seri, singleYear, t(ch.unitKey || cfg.unit));
+      } else if (ch.type === "portsShare") {
+        // "ports" ile aynı, yalnız tooltip'te ham sayının altında pazar payı yüzdesi de gösterilir
+        // (kruvaziyer talebi) — yüzde tüm limanların toplamına göre (yalnız görünen ilk 10'a göre değil).
+        const seri = seriFor(ch.seri);
+        const singleYear = state.years.length === 1 ? state.years[0] : null;
+        const all = aggPorts(seri);
+        const total = all.reduce((s, x) => s + x.deger, 0);
+        drawPortsBars(host, all.slice(0, 10), seri, singleYear, t(ch.unitKey || cfg.unit), total);
       } else if (ch.type === "countries") {
         const seri = seriFor(ch.seri);
         const singleYear = state.years.length === 1 ? state.years[0] : null;
