@@ -724,7 +724,7 @@
       if (!top || !total) return { valueHtml: "—", note: "", yearly: true };
       const pct = (top.deger / total) * 100;
       return {
-        valueHtml: `<span class="dq-port">${short(top.etiket)}</span>%${pct.toFixed(1).replace(".", ",")}`,
+        valueHtml: `%${pct.toFixed(1).replace(".", ",")}<span class="dq-port">${short(top.etiket)}</span>`,
         note: NOTE_SHARE, yearly: true,
       };
     }
@@ -737,7 +737,7 @@
       if (!top || !total) return { valueHtml: "—", note: "", yearly: true };
       const pct = (top.deger / total) * 100;
       return {
-        valueHtml: `<span class="dq-port">${top.liman}</span>%${pct.toFixed(1).replace(".", ",")}`,
+        valueHtml: `%${pct.toFixed(1).replace(".", ",")}<span class="dq-port">${top.liman}</span>`,
         note: NOTE_SHARE, yearly: true,
       };
     }
@@ -751,7 +751,7 @@
       const hv = U.human(top.deger);
       const mag = hv.uKey ? `<span data-i18n="${hv.uKey}">${hv.u}</span> ` : "";
       return {
-        valueHtml: `<span class="dq-port">${MON()[top.mo - 1]}</span>${hv.v} <span class="dq-unit">${mag}<span data-i18n="${cd.unitKey}">${t(cd.unitKey)}</span></span>`,
+        valueHtml: `${hv.v} <span class="dq-unit">${mag}<span data-i18n="${cd.unitKey}">${t(cd.unitKey)}</span></span><span class="dq-port">${MON()[top.mo - 1]}</span>`,
         note: NOTE_TOP, yearly: true,
       };
     }
@@ -764,7 +764,7 @@
       const hv = U.human(top.deger);
       const mag = hv.uKey ? `<span data-i18n="${hv.uKey}">${hv.u}</span> ` : "";
       return {
-        valueHtml: `<span class="dq-port">${hatName}</span>${hv.v} <span class="dq-unit">${mag}<span data-i18n="${cd.unitKey}">${t(cd.unitKey)}</span></span>`,
+        valueHtml: `${hv.v} <span class="dq-unit">${mag}<span data-i18n="${cd.unitKey}">${t(cd.unitKey)}</span></span><span class="dq-port">${hatName}</span>`,
         note: NOTE_TOP, yearly: true,
       };
     }
@@ -776,7 +776,7 @@
     const hv = U.human(top.deger);
     const mag = hv.uKey ? `<span data-i18n="${hv.uKey}">${hv.u}</span> ` : "";
     return {
-      valueHtml: `<span class="dq-port">${name}</span>${hv.v} <span class="dq-unit">${mag}<span data-i18n="${cd.unitKey}">${t(cd.unitKey)}</span></span>`,
+      valueHtml: `${hv.v} <span class="dq-unit">${mag}<span data-i18n="${cd.unitKey}">${t(cd.unitKey)}</span></span><span class="dq-port">${name}</span>`,
       note: NOTE_TOP, yearly: true,
     };
   }
