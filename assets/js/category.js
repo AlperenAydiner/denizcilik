@@ -113,7 +113,18 @@
       ],
     },
     bogazlar: { ic: "bogaz", accent: "--c-bogaz", unit: "unit.gecis", headKey: "bogaz_gecis", arch: "bogazlar",
-      trendKey: null, series: [] },
+      trendKey: null, series: [],
+      quad: true, defaultYearSpan: 1,
+      cards: [
+        { type: "sum", seri: "toplam", labelKey: "bogazlar.kpiGemi", unitKey: "unit.gemi" },
+        { type: "sum", seri: "gros_ton", labelKey: "bogazlar.kpiGrossTon", unitKey: "unit.grosston" },
+        { type: "sum", seri: "ugraksiz", labelKey: "bogazlar.kpiUgraksiz", unitKey: "unit.gemi" },
+      ],
+      charts: [
+        { id: "dTanker", type: "tankerLine", titleKey: "bogazlar.chartTanker", unitKey: "unit.gemi" },
+        { id: "dGemi", type: "monthlySeries", seri: "toplam", titleKey: "bogazlar.chartGemi", unitKey: "unit.gemi" },
+        { id: "dGrossTon", type: "monthlySeries", seri: "gros_ton", titleKey: "bogazlar.chartGrossTon", unitKey: "unit.grosston" },
+      ] },
     kabotaj: {
       ic: "kabotaj", accent: "--c-kabotaj", headKey: "kabotaj_yolcu", arch: "kabotaj", series: [],
       // Kabotaj'ta ay/liman kırılımı hiç yok (kaynakta da yok) — salt yıllık, 4 metrik.
@@ -579,20 +590,26 @@
     setTimeout(draw, 40);
   }
 
-  /* Grafik öğesi → kaynak veritabanı satırı (panelde tıklayınca düzenlenir) */
-  function monthEdit(avail, seriKey, seriName) {
+  /* Grafik öğesi → kaynak veritabanı satırı (panelde tıklayınca düzenlenir).
+     bogazlar'da "toplam"/"gros_ton"/"ugraksiz" fact_strait'ten türetilir (gerçek satır orada),
+     "tanker_tta/lpg/tch" ise gerçek fact_monthly satırlarıdır — ikisi de aynı grafik ailesinde
+     karışabildiği için hedef tablo seriye göre ayrıştırılır. */
+  const BOGAZ_STRAIT_FIELD = { toplam: "gemi_adedi", gros_ton: "gros_ton", ugraksiz: "ugraksiz_gemi" };
+  function monthEditForYear(avail, seriKey, seriName, y) {
     return (i) => {
       const mo = avail[i];
       if (mo == null) return null;
-      const y = state.years[0];
       const l = `${MON()[mo - 1]} ${y} · ${seriName}`;
       if (cat === "bogazlar") {
-        return { t: "fact_strait", m: { bogaz: "istanbul", yil: y, ay: mo },
-                 f: seriKey === "gros_ton" ? "gros_ton" : "gemi_adedi", l, k: "num" };
+        const field = BOGAZ_STRAIT_FIELD[seriKey];
+        if (field) return { t: "fact_strait", m: { bogaz: "istanbul", yil: y, ay: mo }, f: field, l, k: "num" };
       }
       return { t: "fact_monthly", m: { kategori: cat, yil: y, ay: mo, seri: seriKey },
                f: "deger", l, k: "num" };
     };
+  }
+  function monthEdit(avail, seriKey, seriName) {
+    return monthEditForYear(avail, seriKey, seriName, state.years[0]);
   }
   const RENAME_WARN = "Bu ad, aynı satırın kimliği. Değiştirirsen yalnız bu yılın kaydı yeniden adlandırılır; diğer yıllar eski adla kalır ve grafikte ayrı görünür.";
 
@@ -711,9 +728,7 @@
       const series = yrsSorted.map((y, i) => ({
         name: String(y), color: palette[i % palette.length],
         values: avail.map((mo) => mVal(y, mo, "toplam")),
-        edit: (idx) => { const mo = avail[idx]; return mo == null ? null : { t: "fact_monthly",
-          m: { kategori: cat, yil: y, ay: mo, seri: "toplam" }, f: "deger",
-          l: `${MON()[mo - 1]} ${y} · ${t("ui.total")}`, k: "num" }; },
+        edit: monthEditForYear(avail, "toplam", t("ui.total"), y),
       }));
       C.lineArea(host, { labels, unit, series });
     } else {
@@ -801,6 +816,48 @@
           });
         });
         C.treemap(host, { unit: t(cfg.unit), items });
+      } else if (ch.type === "monthlySeries") {
+        // Tek seri, ay bazında — tek yıl seçiliyse sütun, çoklu yılda yıl başına ayrı çizgi
+        // (drawMonthlyChart'ın "toplam" özel-hâline benzer, ancak seri cfg.charts'tan gelir).
+        const avail = curAvail(), unit = t(ch.unitKey || cfg.unit), seri = ch.seri;
+        if (!avail.length) { host.innerHTML = `<p class="csub">—</p>`; return; }
+        const labels = avail.map((x) => MON()[x - 1]);
+        if (state.years.length > 1) {
+          const palette = ["--c-yuk", "--c-konteyner", "--c-gemi", "--c-kruvaziyer", "--c-roro", "--c-bogaz"]
+            .map((v) => cs.getPropertyValue(v).trim());
+          const yrsSorted = [...state.years].sort((a, b) => b - a).slice(0, 10);
+          const series = yrsSorted.map((y, i) => ({
+            name: String(y), color: palette[i % palette.length],
+            values: avail.map((mo) => mVal(y, mo, seri)),
+            edit: monthEditForYear(avail, seri, String(y), y),
+          }));
+          C.lineArea(host, { labels, unit, series });
+        } else {
+          const y = state.years[0];
+          C.columns(host, { labels, unit, series: [{
+            name: t(ch.titleKey), color: accent,
+            values: avail.map((mo) => mVal(y, mo, seri)),
+            edit: monthEditForYear(avail, seri, t(ch.titleKey), y),
+          }] });
+        }
+      } else if (ch.type === "tankerLine") {
+        // TTA/LPG/TCH — üç sabit seri, her zaman çizgi grafik; çoklu yıl seçiliyse aylar
+        // bazında seçili yılların toplamı (liman/ülke grafikleriyle aynı toplama mantığı).
+        const avail = curAvail(), unit = t(ch.unitKey || cfg.unit);
+        if (!avail.length) { host.innerHTML = `<p class="csub">—</p>`; return; }
+        const labels = avail.map((x) => MON()[x - 1]);
+        const singleYear = state.years.length === 1 ? state.years[0] : null;
+        const TANKERS = [
+          ["tanker_tta", "TTA", accent],
+          ["tanker_lpg", "LPG", accent2],
+          ["tanker_tch", "TCH", cs.getPropertyValue("--sky-300").trim()],
+        ];
+        const series = TANKERS.map(([seri, name, color]) => ({
+          name, color,
+          values: avail.map((mo) => state.years.reduce((s, y) => s + mVal(y, mo, seri), 0)),
+          edit: singleYear != null ? monthEditForYear(avail, seri, name, singleYear) : null,
+        }));
+        C.lineArea(host, { labels, unit, series });
       }
     });
   }
@@ -948,14 +1005,21 @@
       return all;
     }
     if (catSlug === "bogazlar") {
-      // fact_strait: kendi kategorili değil, bogaz sütunuyla ayrışır — monthly şekline dönüştürülür
-      const rows = await get("fact_strait?select=*&bogaz=eq.istanbul");
+      // fact_strait: kendi kategorili değil, bogaz sütunuyla ayrışır — monthly şekline dönüştürülür.
+      // Tanker (TTA/LPG/TCH) kırılımı ise gerçek fact_monthly satırları (kategori="bogazlar") —
+      // ikisi aynı DET.monthly dizisinde birleşir, mVal()/sumSel() ayrım gözetmeden okur.
+      const [rows, tankerRows] = await Promise.all([
+        get("fact_strait?select=*&bogaz=eq.istanbul"),
+        get("fact_monthly?select=*&kategori=eq.bogazlar"),
+      ]);
       if (!Array.isArray(rows) || !rows.length) throw new Error("boş fact_strait");
       const monthly = [];
       rows.forEach((r) => {
         if (r.gemi_adedi != null) monthly.push({ kategori: "bogazlar", yil: r.yil, ay: r.ay, seri: "toplam", deger: +r.gemi_adedi });
         if (r.gros_ton != null) monthly.push({ kategori: "bogazlar", yil: r.yil, ay: r.ay, seri: "gros_ton", deger: +r.gros_ton });
+        if (r.ugraksiz_gemi != null) monthly.push({ kategori: "bogazlar", yil: r.yil, ay: r.ay, seri: "ugraksiz", deger: +r.ugraksiz_gemi });
       });
+      (tankerRows || []).forEach((r) => monthly.push({ kategori: "bogazlar", yil: r.yil, ay: r.ay, seri: r.seri, deger: +r.deger }));
       return { monthly, ports: [], breakdown: [] };
     }
     const q = `kategori=eq.${catSlug}`;

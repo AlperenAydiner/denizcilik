@@ -251,3 +251,13 @@ insert into content (key, tr, en) values
 ('roro.kpiTopHat', 'En yoğun hat', 'Busiest line'),
 ('roro.chartHat', 'Hat yoğunlukları', 'Line intensity')
 on conflict (key) do nothing;
+
+-- Türk Boğazları dashboard yeniden tasarımı: 3 KPI kartı + tanker kırılımlı çizgi grafiği
+insert into content (key, tr, en) values
+('bogazlar.kpiGemi', 'Toplam gemi geçiş sayısı', 'Total vessel transits'),
+('bogazlar.kpiGrossTon', 'Toplam gross ton', 'Total gross tonnage'),
+('bogazlar.kpiUgraksiz', 'Uğraksız gemi sayısı', 'Non-calling vessels'),
+('bogazlar.chartTanker', 'Aylara göre tanker dağılımı (TTA / LPG / TCH)', 'Monthly tanker breakdown (TTA / LPG / TCH)'),
+('bogazlar.chartGemi', 'Aylara göre gemi adedi', 'Monthly vessel count'),
+('bogazlar.chartGrossTon', 'Aylara göre toplam gross ton', 'Monthly total gross tonnage')
+on conflict (key) do nothing;
