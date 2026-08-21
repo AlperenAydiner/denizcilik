@@ -121,25 +121,27 @@
   function bars(host, opts) {
     host.innerHTML = "";
     const items = opts.items;
-    const W = 720, rowH = 46, H = items.length * rowH + 20;
+    const fs = opts.labelFontSize || 13; // isteğe bağlı — bazı sayfalarda büyütülüyor
+    const barH = Math.max(22, fs * 1.7);
+    const W = 720, rowH = Math.max(46, barH + 24), H = items.length * rowH + 20;
     const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "xMidYMid meet" });
     const max = Math.max(...items.map((d) => d.value)) * 1.02;
-    const labelW = 150, barMax = W - labelW - 90;
+    const labelW = Math.max(150, fs * 11.5), barMax = W - labelW - 90;
     items.forEach((d, i) => {
-      const y = 12 + i * rowH;
-      const lbl = el("text", { x: 0, y: y + 24, class: "axis-label", "font-size": 13 });
+      const y = 12 + i * rowH, barY = y + (rowH - 20 - barH) / 2, mid = barY + barH / 2 + fs * 0.35;
+      const lbl = el("text", { x: 0, y: mid, class: "axis-label", "font-size": fs });
       lbl.setAttribute("fill", "var(--text-soft)"); lbl.textContent = d.label;
       markEdit(lbl, d.editLabel);
       svg.appendChild(lbl);
-      svg.appendChild(el("rect", { x: labelW, y: y + 8, width: barMax, height: 22, rx: 7, fill: "var(--surface-2)" }));
+      svg.appendChild(el("rect", { x: labelW, y: barY, width: barMax, height: barH, rx: 7, fill: "var(--surface-2)" }));
       const w = (barMax * d.value) / max;
-      const bar = el("rect", { x: labelW, y: y + 8, width: 0, height: 22, rx: 7, fill: d.color || "var(--accent)", class: "bar-rect", style: "cursor:pointer" });
+      const bar = el("rect", { x: labelW, y: barY, width: 0, height: barH, rx: 7, fill: d.color || "var(--accent)", class: "bar-rect", style: "cursor:pointer" });
       markEdit(bar, d.edit);
       svg.appendChild(bar);
       bar.style.transition = "width 1.2s cubic-bezier(0.22,1,0.36,1)";
       bar.style.transitionDelay = i * 60 + "ms";
       requestAnimationFrame(() => (bar.width.baseVal.value = w));
-      const val = el("text", { x: labelW + barMax + 12, y: y + 24, class: "axis-label", "font-size": 13, "font-weight": 700 });
+      const val = el("text", { x: labelW + barMax + 12, y: mid, class: "axis-label", "font-size": fs, "font-weight": 700 });
       val.setAttribute("fill", "var(--white)");
       const hv = window.MDUtil.human(d.value); val.textContent = hv.v + (hv.u ? " " + hv.u : "");
       svg.appendChild(val);
@@ -147,7 +149,7 @@
         bar.style.opacity = "0.85";
         const rect = host.getBoundingClientRect(), sc = rect.width / W;
         showTip(`<b>${d.label}</b><br><b>${nf.format(d.value)}</b> ${opts.unit || ""}`,
-          rect.left + (labelW + w) * sc, rect.top + (y + 8) * sc + window.scrollY);
+          rect.left + (labelW + w) * sc, rect.top + barY * sc + window.scrollY);
       });
       bar.addEventListener("mouseleave", () => { bar.style.opacity = "1"; hideTip(); });
     });
@@ -280,5 +282,87 @@
     }
   }
 
-  window.MDCharts = { lineArea, bars, donut, spark, columns };
+  /* ---------- Treemap (squarified) ----------
+     opts.items: [{label, group, value, color, edit}]. Karesel oranlara yakın
+     dikdörtgenler için klasik "squarified" algoritma (Bruls/Huizing/van Wijk). */
+  function squarify(items, x, y, w, h) {
+    const total = items.reduce((s, it) => s + it.value, 0);
+    if (!total || !items.length) return [];
+    const scale = (w * h) / total;
+    const worstRatio = (row, sideLen) => {
+      const sum = row.reduce((s, it) => s + it.area, 0);
+      const rowLen = sum / sideLen;
+      let worst = 0;
+      row.forEach((it) => {
+        const other = it.area / rowLen;
+        worst = Math.max(worst, rowLen / other, other / rowLen);
+      });
+      return worst;
+    };
+    let remain = items.map((it) => Object.assign({}, it, { area: it.value * scale }));
+    const out = [];
+    let rx = x, ry = y, rw = w, rh = h;
+    while (remain.length) {
+      const shortSide = Math.min(rw, rh);
+      let row = [remain[0]], best = worstRatio(row, shortSide);
+      for (let i = 1; i < remain.length; i++) {
+        const trial = row.concat(remain[i]);
+        const w2 = worstRatio(trial, shortSide);
+        if (w2 <= best) { row = trial; best = w2; } else break;
+      }
+      const rowSum = row.reduce((s, it) => s + it.area, 0);
+      const rowLen = rowSum / shortSide;
+      const horizontal = rw <= rh; // dar kenar dikeyse satırı yatay dizeriz
+      let offset = 0;
+      row.forEach((it) => {
+        const side = it.area / rowLen;
+        if (horizontal) out.push(Object.assign({}, it, { x: rx + offset, y: ry, w: side, h: rowLen }));
+        else out.push(Object.assign({}, it, { x: rx, y: ry + offset, w: rowLen, h: side }));
+        offset += side;
+      });
+      if (horizontal) { ry += rowLen; rh -= rowLen; } else { rx += rowLen; rw -= rowLen; }
+      remain = remain.slice(row.length);
+    }
+    return out;
+  }
+
+  function treemap(host, opts) {
+    host.innerHTML = "";
+    const items = (opts.items || []).filter((d) => d.value > 0).sort((a, b) => b.value - a.value);
+    if (!items.length) { host.innerHTML = '<p class="csub">—</p>'; return; }
+    const W = 720, H = 380;
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "xMidYMid meet" });
+    const rects = squarify(items, 0, 0, W, H);
+    rects.forEach((r) => {
+      const pad = 1.5, rx0 = r.x + pad, ry0 = r.y + pad, rw0 = Math.max(r.w - pad * 2, 0), rh0 = Math.max(r.h - pad * 2, 0);
+      const rect = el("rect", { x: rx0, y: ry0, width: rw0, height: rh0, rx: 6,
+        fill: r.color || "var(--accent)", style: "cursor:pointer;opacity:0;transition:opacity .5s" });
+      markEdit(rect, r.edit);
+      svg.appendChild(rect);
+      requestAnimationFrame(() => (rect.style.opacity = "1"));
+      if (rw0 > 44 && rh0 > 24) {
+        const maxChars = Math.max(3, Math.floor(rw0 / 6.6));
+        const short = r.label.length > maxChars ? r.label.slice(0, maxChars - 1) + "…" : r.label;
+        const txt = el("text", { x: rx0 + 8, y: ry0 + 18, "font-size": 12.5, "font-weight": 700, fill: "#fff" });
+        txt.style.pointerEvents = "none"; txt.textContent = short;
+        svg.appendChild(txt);
+        if (rh0 > 40) {
+          const hv = window.MDUtil.human(r.value);
+          const sub = el("text", { x: rx0 + 8, y: ry0 + 34, "font-size": 11, fill: "rgba(255,255,255,.88)" });
+          sub.style.pointerEvents = "none"; sub.textContent = hv.v + (hv.u ? " " + hv.u : "");
+          svg.appendChild(sub);
+        }
+      }
+      rect.addEventListener("mouseenter", () => {
+        rect.style.filter = "brightness(1.15)";
+        const hostRect = host.getBoundingClientRect(), sc = hostRect.width / W;
+        showTip(`<b>${r.group ? r.group + " — " : ""}${r.label}</b><br><b>${nf.format(r.value)}</b> ${opts.unit || ""}`,
+          hostRect.left + (r.x + r.w / 2) * sc, hostRect.top + r.y * sc + window.scrollY);
+      });
+      rect.addEventListener("mouseleave", () => { rect.style.filter = ""; hideTip(); });
+    });
+    host.appendChild(svg);
+  }
+
+  window.MDCharts = { lineArea, bars, donut, spark, columns, treemap };
 })();

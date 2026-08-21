@@ -243,3 +243,11 @@ insert into content (key, tr, en) values
 ('ui.flag', 'Bayrak Türü', 'Flag Type'),
 ('ui.contType', 'Konteyner Tipi', 'Container Type')
 on conflict (key) do nothing;
+
+-- RO-RO dashboard yeniden tasarımı: 3 KPI kartı + hat yoğunluğu treemap
+insert into content (key, tr, en) values
+('roro.kpiTotal', 'Toplam taşınan araç sayısı', 'Total vehicles carried'),
+('roro.kpiTopType', 'En çok taşınan araç cinsi (pazar payı)', 'Leading vehicle type (market share)'),
+('roro.kpiTopHat', 'En yoğun hat', 'Busiest line'),
+('roro.chartHat', 'Hat yoğunlukları', 'Line intensity')
+on conflict (key) do nothing;

@@ -100,8 +100,17 @@
       ic: "roro", accent: "--c-roro", unit: "unit.arac", headKey: "roro_arac", arch: "roro",
       trendKey: "roro_arac_yil",
       series: [{ k: "gelen", key: "series.gelenArac" }, { k: "giden", key: "series.gidenArac" }],
-      split: true, splitKey: "dim.roro.split",
-      barsDim: { dim: "arac_cinsi", key: "dim.roro.bars", top: 10 },
+      quad: true, defaultYearSpan: 1,
+      cards: [
+        { type: "sum", seri: "toplam", labelKey: "roro.kpiTotal", unitKey: "unit.arac" },
+        { type: "topType", labelKey: "roro.kpiTopType" },
+        { type: "topHat", labelKey: "roro.kpiTopHat", unitKey: "unit.arac" },
+      ],
+      charts: [
+        { id: "dMonth", type: "monthly", titleKey: "cat.monthTitle" },
+        { id: "dCins", type: "cinsBars", dim: "arac_cinsi", titleKey: "dim.roro.bars" },
+        { id: "dHatTree", type: "treemap", dim: "hat", titleKey: "roro.chartHat" },
+      ],
     },
     bogazlar: { ic: "bogaz", accent: "--c-bogaz", unit: "unit.gecis", headKey: "bogaz_gecis", arch: "bogazlar",
       trendKey: null, series: [] },
@@ -206,6 +215,13 @@
   // aggPorts mantığı, seçili yılların toplamı).
   function aggCountries(seri) {
     const rows = bRows().filter((r) => r.boyut === "ulke" && r.seri === seri && state.years.includes(r.yil) && r.deger > 0);
+    const agg = {};
+    rows.forEach((r) => { agg[r.etiket] = (agg[r.etiket] || 0) + r.deger; });
+    return Object.keys(agg).map((etiket) => ({ etiket, deger: agg[etiket] })).sort((a, b) => b.deger - a.deger);
+  }
+  // Genel amaçlı yıllık kırılım toplamı — herhangi bir boyut+seri için (roro: arac_cinsi, hat).
+  function aggBreakdown(boyut, seri) {
+    const rows = bRows().filter((r) => r.boyut === boyut && r.seri === seri && state.years.includes(r.yil));
     const agg = {};
     rows.forEach((r) => { agg[r.etiket] = (agg[r.etiket] || 0) + r.deger; });
     return Object.keys(agg).map((etiket) => ({ etiket, deger: agg[etiket] })).sort((a, b) => b.deger - a.deger);
@@ -629,6 +645,7 @@
   // metinleri — hem KPI panosunda hem düzenleme modunda tutarlı kalsın diye tek yerde.
   const NOTE_SUM = "Bu toplam, seçili yıl(lar) ve ayların veritabanındaki değerlerinden hesaplanıyor. Değiştirmek için aşağıdaki ilgili grafikte ilgili sütuna tıkla.";
   const NOTE_TOP = "Bu değer, seçili yıllardaki toplamlardan hesaplanıyor. Değiştirmek için aşağıdaki ilgili grafikte ilgili sütuna tıkla.";
+  const NOTE_SHARE = "Bu pazar payı, seçili yıllardaki araç cinsi toplamlarından hesaplanıyor (bu cinsin toplamı ÷ tüm cinslerin toplamı). Değiştirmek için aşağıdaki grafikte ilgili sütuna tıkla.";
 
   // Bildirimli kart hesaplama — cfg.cards'taki her girdi için değer/açıklama/not üretir.
   function computeCard(cd) {
@@ -638,6 +655,31 @@
       return {
         valueHtml: `${hv.v} <span class="dq-unit">${mag}<span data-i18n="${cd.unitKey}">${t(cd.unitKey)}</span></span>`,
         note: NOTE_SUM, yearly: false,
+      };
+    }
+    if (cd.type === "topType") {
+      // Lider araç cinsi + pazar payı (%) — o cinsin toplamı / tüm cinslerin toplamı
+      const agg = aggBreakdown("arac_cinsi", "toplam");
+      const total = agg.reduce((s, x) => s + x.deger, 0);
+      const top = agg[0];
+      if (!top || !total) return { valueHtml: "—", note: "", yearly: true };
+      const pct = (top.deger / total) * 100;
+      return {
+        valueHtml: `<span class="dq-port">${short(top.etiket)}</span>%${pct.toFixed(1).replace(".", ",")}`,
+        note: NOTE_SHARE, yearly: true,
+      };
+    }
+    if (cd.type === "topHat") {
+      // En yoğun hat — etiket "Bölge :: Hat" olarak saklanıyor, gösterimde hat adı yeterli
+      const agg = aggBreakdown("hat", "toplam");
+      const top = agg[0];
+      if (!top) return { valueHtml: "—", note: "", yearly: true };
+      const hatName = top.etiket.split(" :: ")[1] || top.etiket;
+      const hv = U.human(top.deger);
+      const mag = hv.uKey ? `<span data-i18n="${hv.uKey}">${hv.u}</span> ` : "";
+      return {
+        valueHtml: `<span class="dq-port">${hatName}</span>${hv.v} <span class="dq-unit">${mag}<span data-i18n="${cd.unitKey}">${t(cd.unitKey)}</span></span>`,
+        note: NOTE_TOP, yearly: true,
       };
     }
     const seri = seriFor(cd.seri);
@@ -724,6 +766,41 @@
         const items = aggCins().map((r) => ({ label: t(CINS_KEY[r.etiket]), value: r.deger, color: accent }));
         if (items.some((x) => x.value > 0)) C.bars(host, { unit: t(cfg.unit), items });
         else host.innerHTML = `<p class="csub">—</p>`;
+      } else if (ch.type === "cinsBars") {
+        // Serbest metinli cins listesi (roro: 27 araç tipi) — short() ile TR/EN kısaltılır,
+        // punto normalden büyük (kullanıcı talebi: "yazılar büyütülsün"). Tek yıl seçiliyse
+        // tek satıra karşılık geldiği için düzenlenebilir, çoklu yılda salt-okunur (toplam).
+        const singleYear = state.years.length === 1 ? state.years[0] : null;
+        const items = aggBreakdown(ch.dim, "toplam").slice(0, 10).map((r) => {
+          const label = short(r.etiket);
+          if (singleYear == null) return { label, value: r.deger, color: accent };
+          const m = { kategori: cat, yil: singleYear, boyut: ch.dim, etiket: r.etiket, seri: "toplam" };
+          return { label, value: r.deger, color: accent,
+            edit: { t: "fact_breakdown", m, f: "deger", l: `${label} · ${singleYear}`, k: "num" },
+            editLabel: { t: "fact_breakdown", m, f: "etiket", l: `${label} — ad`, k: "text", w: RENAME_WARN } };
+        });
+        if (items.length) C.bars(host, { unit: t(cfg.unit), items, labelFontSize: 16 });
+        else host.innerHTML = `<p class="csub">—</p>`;
+      } else if (ch.type === "treemap") {
+        const cs2 = getComputedStyle(document.documentElement);
+        const palette = ["--c-yuk", "--c-konteyner", "--c-gemi", "--c-kruvaziyer", "--c-roro", "--c-bogaz", "--c-kabotaj", "--c-filo"]
+          .map((v) => cs2.getPropertyValue(v).trim());
+        const groups = new Map();
+        const singleYear = state.years.length === 1 ? state.years[0] : null;
+        const items = aggBreakdown(ch.dim, "toplam").map((r) => {
+          const [grp, name] = r.etiket.split(" :: ");
+          if (!groups.has(grp)) groups.set(grp, palette[groups.size % palette.length]);
+          const label = name || r.etiket;
+          const base = { label, group: grp, value: r.deger, color: groups.get(grp) };
+          if (singleYear == null) return base;
+          // Tek dikdörtgen tek tıklama hedefi olduğu için yalnız değer düzenlenebilir
+          // (ad değişikliği için ayrı bir tıklama alanı yok — treemap'in kompakt yapısı).
+          const m = { kategori: cat, yil: singleYear, boyut: ch.dim, etiket: r.etiket, seri: "toplam" };
+          return Object.assign(base, {
+            edit: { t: "fact_breakdown", m, f: "deger", l: `${grp} — ${label} · ${singleYear}`, k: "num" },
+          });
+        });
+        C.treemap(host, { unit: t(cfg.unit), items });
       }
     });
   }
